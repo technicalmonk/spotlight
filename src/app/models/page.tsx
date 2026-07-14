@@ -34,8 +34,14 @@ export default async function ModelsPage({ searchParams }: ModelsPageProps) {
       search: params.search,
       page,
       limit: 50,
-    }),
-    getProviders(),
+    }).catch(() => ({
+      models: [],
+      total: 0,
+      page: 1,
+      pageSize: 50,
+      totalPages: 0,
+    })),
+    getProviders().catch(() => []),
   ]);
 
   return (

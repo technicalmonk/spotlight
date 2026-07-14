@@ -9,10 +9,17 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  // Fetch data with graceful fallback so the page renders even if DB is empty/unavailable
   const [totalModels, featuredScenarios, status] = await Promise.all([
-    getTotalModelCount(),
-    getFeaturedScenarios(),
-    getIngestionStatus(),
+    getTotalModelCount().catch(() => 0),
+    getFeaturedScenarios().catch(() => []),
+    getIngestionStatus().catch(() => ({
+      lastRun: null,
+      totalModels: 0,
+      totalProviders: 0,
+      activeModels: 0,
+      recentPriceChanges: 0,
+    })),
   ]);
 
   return (

@@ -18,7 +18,7 @@ export async function generateMetadata({
   params,
 }: ModelPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const data = await getModelBySlug(slug);
+  const data = await getModelBySlug(slug).catch(() => null);
   if (!data) {
     return { title: "Model not found — Spotlight" };
   }
@@ -38,7 +38,7 @@ export async function generateMetadata({
 
 export default async function ModelDetailPage({ params }: ModelPageProps) {
   const { slug } = await params;
-  const data = await getModelBySlug(slug);
+  const data = await getModelBySlug(slug).catch(() => null);
 
   if (!data) {
     notFound();
@@ -47,7 +47,10 @@ export default async function ModelDetailPage({ params }: ModelPageProps) {
   const { model, provider, currentPricing: pricing } = data!;
 
   // Fetch price history
-  const priceHistory = await getPriceHistory(model.id);
+  const priceHistory = await getPriceHistory(model.id).catch(() => ({
+    modelId: model.id,
+    history: [],
+  }));
 
   // JSON-LD structured data
   const jsonLd = {
