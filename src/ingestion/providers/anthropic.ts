@@ -7,12 +7,10 @@ import { fetchWithRetry, type ScrapedPricing } from "./base";
  */
 export async function scrapeAnthropic(): Promise<ScrapedPricing[]> {
   try {
-    const response = await fetchWithRetry("https://www.anthropic.com/pricing", {
+    await fetchWithRetry("https://www.anthropic.com/pricing", {
       timeout: 15000,
       retries: 2,
     });
-    const html = await response.text();
-    
     // Anthropic's pricing page is JS-rendered.
     // OpenRouter covers base pricing. Batch and committed tier need browser scraping.
     // Return empty for now — will be enhanced with headless browser.

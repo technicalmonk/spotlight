@@ -1,11 +1,10 @@
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "@/db/client";
 import {
   models,
   pricingTiers,
   priceChangeLogs,
   providers,
-  usageScenarios,
 } from "@/db/schema";
 import {
   fetchOpenRouterModels,

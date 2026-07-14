@@ -40,11 +40,11 @@ export default function CompareClient() {
 
   const slugs = modelSlugs ? modelSlugs.split(",").filter(Boolean) : [];
 
+  // Derived state: no results when search is too short
+  const visibleSearchResults = search.length < 2 ? [] : searchResults;
+
   useEffect(() => {
-    if (search.length < 2) {
-      setSearchResults([]);
-      return;
-    }
+    if (search.length < 2) return;
     const timer = setTimeout(() => {
       fetch(`/api/models?search=${encodeURIComponent(search)}&limit=10`)
         .then((r) => r.json())
@@ -57,14 +57,13 @@ export default function CompareClient() {
   }, [search]);
 
   useEffect(() => {
-    if (slugs.length < 2) {
-      setComparisonData([]);
-      return;
-    }
-    fetch(`/api/compare?models=${slugs.join(",")}`)
+    if (slugs.length < 2) return;
+    const slugParam = slugs.join(",");
+    fetch(`/api/compare?models=${slugParam}`)
       .then((r) => r.json())
       .then((data) => setComparisonData(data.models))
       .catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- slugs derives from modelSlugs
   }, [modelSlugs]);
 
   const addModel = (slug: string) => {
@@ -80,7 +79,10 @@ export default function CompareClient() {
     setModelSlugs(slugs.filter((s) => s !== slug).join(","));
   };
 
-  const validModels = comparisonData.filter((m) => m.model && m.pricing);
+  // Only show comparison data when 2+ slugs selected
+  const validModels = slugs.length >= 2
+    ? comparisonData.filter((m) => m.model && m.pricing)
+    : [];
 
   const costCalculations = validModels.map((m) => {
     const calc = calculateCost(
@@ -114,9 +116,9 @@ export default function CompareClient() {
             placeholder="Search models to add..."
             disabled={slugs.length >= 5}
           />
-          {searchResults.length > 0 && (
+          {visibleSearchResults.length > 0 && (
             <div className="mt-2 border border-gray-200 rounded-md shadow-sm max-h-48 overflow-auto">
-              {searchResults.map((m) => (
+              {visibleSearchResults.map((m) => (
                 <button
                   key={m.slug}
                   onClick={() => addModel(m.slug)}

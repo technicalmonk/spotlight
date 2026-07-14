@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 /**
  * Base utilities for provider-specific pricing scrapers.
  * These supplement OpenRouter data with pricing not available via API:
@@ -109,7 +107,7 @@ export function parsePrice(value: string): number | null {
  * Extract pricing table rows from HTML.
  * Returns array of objects with cell text, keyed by header.
  */
-export function extractTableRows(html: string, tableSelector?: string): Record<string, string>[] {
+export function extractTableRows(html: string, _tableSelector?: string): Record<string, string>[] {
   // Basic HTML table parser — no external deps
   const rows: Record<string, string>[] = [];
   

@@ -7,12 +7,10 @@ import { fetchWithRetry, type ScrapedPricing } from "./base";
  */
 export async function scrapeGoogle(): Promise<ScrapedPricing[]> {
   try {
-    const response = await fetchWithRetry("https://ai.google.dev/pricing", {
+    await fetchWithRetry("https://ai.google.dev/pricing", {
       timeout: 15000,
       retries: 2,
     });
-    const html = await response.text();
-    
     // Google AI Studio pricing page may have static content.
     // Will be enhanced with proper parsing when page structure is verified.
     

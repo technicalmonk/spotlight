@@ -1,6 +1,6 @@
 "use client";
 
-import { useQueryState, parseAsString, parseAsInteger } from "nuqs";
+import { useQueryState, parseAsString } from "nuqs";
 import { useTransition } from "react";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -25,7 +25,7 @@ export function ModelFilters({ providers }: ModelFiltersProps) {
     parseAsString.withDefault("name-asc")
   );
   const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
-  const [_, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;

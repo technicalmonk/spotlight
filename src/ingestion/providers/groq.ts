@@ -7,12 +7,10 @@ import { fetchWithRetry, type ScrapedPricing } from "./base";
  */
 export async function scrapeGroq(): Promise<ScrapedPricing[]> {
   try {
-    const response = await fetchWithRetry("https://groq.com/pricing/", {
+    await fetchWithRetry("https://groq.com/pricing/", {
       timeout: 15000,
       retries: 2,
     });
-    const html = await response.text();
-    
     // Groq pricing page structure needs to be verified.
     // Return empty for now.
     

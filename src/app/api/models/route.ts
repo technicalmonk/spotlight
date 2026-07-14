@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllModels, getFilteredModels, getModels } from "@/db/queries";
+import { getFilteredModels } from "@/db/queries";
 import type { ModelFilters, SortField } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
