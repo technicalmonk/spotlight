@@ -147,7 +147,7 @@ export function perTokenToPerMillion(
   if (value === null || value === undefined) return null;
 
   const parsed = parseFloat(value);
-  if (isNaN(parsed) || parsed === 0) return null;
+  if (isNaN(parsed) || parsed <= 0) return null;
 
   return round(parsed * 1_000_000);
 }

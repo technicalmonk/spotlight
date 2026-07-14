@@ -197,8 +197,8 @@ async function upsertModel(
 
     summary.modelsUpdated++;
   } else {
-    // Insert new model
-    const [inserted] = await db
+    // Insert new model (skip if slug already exists from another provider)
+    const inserted = await db
       .insert(models)
       .values({
         providerId,
@@ -214,8 +214,17 @@ async function upsertModel(
         releaseDate: normModel.releaseDate,
         isActive: true,
       })
-      .returning({ id: models.id });
-    modelId = inserted!.id;
+      .returning({ id: models.id })
+      .onConflictDoNothing({ target: models.slug });
+
+    if (inserted.length === 0) {
+      // Slug conflict — skip this model
+      summary.errors.push(
+        `Model ${normModel.openrouterModelId}: slug "${normModel.slug}" already exists (likely a duplicate name from another provider)`,
+      );
+      return;
+    }
+    modelId = inserted[0]!.id;
     summary.modelsAdded++;
     isNewModel = true;
   }
