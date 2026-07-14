@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/openrouter",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/providers",
+      "schedule": "0 */12 * * *"
+    }
+  ]
+}

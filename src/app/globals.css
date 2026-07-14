@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand: #0066ff;
+}
+
+html {
+  -webkit-text-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  @apply bg-white text-gray-900;
+}
+
+/* Smooth focus rings */
+*:focus-visible {
+  @apply outline-none ring-2 ring-brand-600 ring-offset-2 ring-offset-white;
+}
+
+/* Number tabular alignment for tables */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
