@@ -4,6 +4,8 @@ import { ModelCard } from "@/components/models/model-card";
 import { getModels, getProviders } from "@/db/queries";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Models — Spotlight",
   description: "Browse and compare LLM models by provider, modality, and price.",

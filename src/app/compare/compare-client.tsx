@@ -29,7 +29,7 @@ interface ComparisonModel {
   } | null;
 }
 
-export default function ComparePage() {
+export default function CompareClient() {
   const [modelSlugs, setModelSlugs] = useQueryState("models", { defaultValue: "" });
   const [inputTokens, setInputTokens] = useQueryState("input", { defaultValue: "1000" });
   const [outputTokens, setOutputTokens] = useQueryState("output", { defaultValue: "500" });
@@ -105,7 +105,9 @@ export default function ComparePage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Compare Models</h1>
 
         <Card className="p-6 mb-6">
-          <label className="text-sm font-medium text-gray-700 mb-2 block">Add models to compare ({slugs.length}/5)</label>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">
+            Add models to compare ({slugs.length}/5)
+          </label>
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -140,7 +142,7 @@ export default function ComparePage() {
         {slugs.length >= 2 && validModels.length > 0 && (
           <>
             <Card className="p-6 mb-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Feature & Price Comparison</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">Feature and Price Comparison</h3>
               <ComparisonTable models={validModels} />
             </Card>
 
@@ -156,7 +158,7 @@ export default function ComparePage() {
             </Card>
 
             <Card className="p-6 mb-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Usage Pattern & Best Value</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">Usage Pattern and Best Value</h3>
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div>
                   <label className="text-xs text-gray-500">Input tokens</label>

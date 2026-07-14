@@ -16,31 +16,32 @@
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
+    "@hookform/resolvers": "latest",
+    "@neondatabase/serverless": "latest",
+    "clsx": "latest",
+    "drizzle-orm": "latest",
+    "lucide-react": "latest",
     "next": "latest",
+    "nuqs": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "drizzle-orm": "latest",
-    "@neondatabase/serverless": "latest",
-    "zod": "latest",
-    "recharts": "latest",
     "react-hook-form": "latest",
-    "@hookform/resolvers": "latest",
-    "nuqs": "latest",
-    "clsx": "latest",
+    "recharts": "latest",
     "tailwind-merge": "latest",
-    "lucide-react": "latest"
+    "zod": "latest"
   },
   "devDependencies": {
-    "drizzle-kit": "latest",
+    "@tailwindcss/postcss": "^4.3.2",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "typescript": "latest",
-    "tailwindcss": "latest",
-    "postcss": "latest",
     "autoprefixer": "latest",
+    "drizzle-kit": "latest",
     "eslint": "latest",
     "eslint-config-next": "latest",
-    "tsx": "latest"
+    "postcss": "latest",
+    "tailwindcss": "latest",
+    "tsx": "latest",
+    "typescript": "latest"
   }
 }

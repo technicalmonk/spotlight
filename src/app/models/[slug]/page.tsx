@@ -1,20 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getModelBySlug, getAllModelSlugs, getPriceHistory } from "@/db/queries";
+import { getModelBySlug, getPriceHistory } from "@/db/queries";
 import { Badge } from "@/components/ui/badge";
 import { PriceHistory } from "@/components/models/price-history";
 import { formatContext, formatPrice, formatDate } from "@/lib/utils";
 import { Check, X } from "lucide-react";
 
-export const revalidate = 3600;
+export const revalidate = 3600; // ISR — revalidate every hour
+
+export const dynamicParams = true; // Allow new slugs without rebuild
 
 interface ModelPageProps {
   params: Promise<{ slug: string }>;
-}
-
-export async function generateStaticParams() {
-  const slugs = await getAllModelSlugs();
-  return slugs.map(({ slug }) => ({ slug }));
 }
 
 export async function generateMetadata({
