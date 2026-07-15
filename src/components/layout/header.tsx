@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X, Layers } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -18,12 +18,25 @@ export function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-lg">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <Layers className="h-5 w-5 text-brand-600" strokeWidth={2.5} />
-          <span className="text-lg font-bold tracking-tight text-gray-900">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="relative">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink-900">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
+                <path
+                  d="M12 2 L14 8 L20 8 L15 12 L17 18 L12 14 L7 18 L9 12 L4 8 L10 8 Z"
+                  fill="#ffd60a"
+                  stroke="#ffd60a"
+                  strokeWidth="0.5"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            <div className="absolute inset-0 -z-10 rounded-lg bg-spotlight-400/30 blur-md transition-opacity group-hover:bg-spotlight-400/50" />
+          </div>
+          <span className="text-lg font-bold tracking-tight text-ink-900">
             Spotlight
           </span>
         </Link>
@@ -38,13 +51,16 @@ export function Header() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "relative rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   isActive
                     ? "text-brand-600"
-                    : "text-gray-600 hover:text-gray-900"
+                    : "text-gray-600 hover:text-ink-900"
                 )}
               >
                 {link.label}
+                {isActive && (
+                  <span className="absolute -bottom-px left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-spotlight-400" />
+                )}
               </Link>
             );
           })}
@@ -76,10 +92,10 @@ export function Header() {
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "block rounded-md px-3 py-2 text-sm font-medium",
+                  "block rounded-md px-3 py-2.5 text-sm font-medium",
                   isActive
-                    ? "text-brand-600"
-                    : "text-gray-600 hover:text-gray-900"
+                    ? "bg-brand-50 text-brand-600"
+                    : "text-gray-600 hover:bg-gray-50"
                 )}
               >
                 {link.label}

@@ -45,10 +45,13 @@ export default async function ModelsPage({ searchParams }: ModelsPageProps) {
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Model Explorer</h1>
-        <p className="mt-1 text-gray-500">
+    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mb-8">
+        <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
+          EXPLORE
+        </div>
+        <h1 className="mt-3 text-3xl font-bold text-ink-900">Model Explorer</h1>
+        <p className="mt-2 text-gray-500">
           {result.total} models from {providers.length} providers. Filter,
           sort, and explore.
         </p>

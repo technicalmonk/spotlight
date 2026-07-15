@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { getModelBySlug, getPriceHistory } from "@/db/queries";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { PriceHistory } from "@/components/models/price-history";
 import { formatContext, formatPrice, formatDate } from "@/lib/utils";
-import { Check, X } from "lucide-react";
+import { Check, X, ArrowLeft, Calculator } from "lucide-react";
 
-export const revalidate = 3600; // ISR — revalidate every hour
-
-export const dynamicParams = true; // Allow new slugs without rebuild
+export const revalidate = 3600;
+export const dynamicParams = true;
 
 interface ModelPageProps {
   params: Promise<{ slug: string }>;
@@ -46,13 +47,11 @@ export default async function ModelDetailPage({ params }: ModelPageProps) {
 
   const { model, provider, currentPricing: pricing } = data!;
 
-  // Fetch price history
   const priceHistory = await getPriceHistory(model.id).catch(() => ({
     modelId: model.id,
     history: [],
   }));
 
-  // JSON-LD structured data
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -75,11 +74,20 @@ export default async function ModelDetailPage({ params }: ModelPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-10">
+        {/* Back link */}
+        <Link
+          href="/models"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-brand-600"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Models
+        </Link>
+
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant="secondary">{provider?.name ?? "Unknown"}</Badge>
+        <div className="mb-8">
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <Badge variant="default">{provider?.name ?? "Unknown"}</Badge>
             {model.modelFamily && (
               <Badge variant="outline">{model.modelFamily}</Badge>
             )}
@@ -89,129 +97,142 @@ export default async function ModelDetailPage({ params }: ModelPageProps) {
               </Badge>
             )}
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">{model.name}</h1>
+          <h1 className="text-4xl font-bold text-ink-900">{model.name}</h1>
           {model.openrouterModelId && (
-            <p className="text-sm text-gray-500 mt-1 font-mono">
+            <p className="mt-2 font-mono text-sm text-gray-500">
               {model.openrouterModelId}
             </p>
           )}
         </div>
 
-        {/* Pricing */}
+        {/* Pricing — hero card */}
         {pricing ? (
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Current Pricing
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div>
-                <p className="text-xs text-gray-500">Input ($/1M tokens)</p>
-                <p className="text-xl font-mono font-semibold text-gray-900">
-                  {formatPrice(pricing.inputPricePerMillion)}
+          <Card className="glow-brand mb-6 overflow-hidden">
+            <CardContent className="p-8">
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-ink-900">
+                  Current Pricing
+                </h2>
+                <Link
+                  href={`/calculator?model=${model.slug}`}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-spotlight-400 px-4 py-2 text-sm font-semibold text-ink-900 transition-colors hover:bg-spotlight-300"
+                >
+                  <Calculator className="h-4 w-4" />
+                  Calculate Cost
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
+                <div className="rounded-xl bg-spotlight-50 p-4">
+                  <p className="text-xs font-medium text-gray-500">Input ($/1M)</p>
+                  <p className="mt-1 font-mono text-2xl font-bold text-ink-900">
+                    {formatPrice(pricing.inputPricePerMillion)}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-gray-50 p-4">
+                  <p className="text-xs font-medium text-gray-500">Output ($/1M)</p>
+                  <p className="mt-1 font-mono text-2xl font-bold text-ink-900">
+                    {formatPrice(pricing.outputPricePerMillion)}
+                  </p>
+                </div>
+                {pricing.cacheReadPricePerMillion && (
+                  <div className="rounded-xl bg-gray-50 p-4">
+                    <p className="text-xs font-medium text-gray-500">Cache Read ($/1M)</p>
+                    <p className="mt-1 font-mono text-2xl font-bold text-ink-900">
+                      {formatPrice(pricing.cacheReadPricePerMillion)}
+                    </p>
+                  </div>
+                )}
+                {pricing.cacheWritePricePerMillion && (
+                  <div className="rounded-xl bg-gray-50 p-4">
+                    <p className="text-xs font-medium text-gray-500">Cache Write ($/1M)</p>
+                    <p className="mt-1 font-mono text-2xl font-bold text-ink-900">
+                      {formatPrice(pricing.cacheWritePricePerMillion)}
+                    </p>
+                  </div>
+                )}
+                {pricing.webSearchPrice && (
+                  <div className="rounded-xl bg-gray-50 p-4">
+                    <p className="text-xs font-medium text-gray-500">Web Search ($/call)</p>
+                    <p className="mt-1 font-mono text-2xl font-bold text-ink-900">
+                      {formatPrice(pricing.webSearchPrice)}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <div className="mt-6 border-t border-gray-100 pt-4">
+                <p className="text-xs text-gray-400">
+                  Last updated: {formatDate(pricing.createdAt)} · Source: {pricing.source}
                 </p>
               </div>
-              <div>
-                <p className="text-xs text-gray-500">Output ($/1M tokens)</p>
-                <p className="text-xl font-mono font-semibold text-gray-900">
-                  {formatPrice(pricing.outputPricePerMillion)}
-                </p>
-              </div>
-              {pricing.cacheReadPricePerMillion && (
-                <div>
-                  <p className="text-xs text-gray-500">Cache Read ($/1M)</p>
-                  <p className="text-xl font-mono font-semibold text-gray-900">
-                    {formatPrice(pricing.cacheReadPricePerMillion)}
-                  </p>
-                </div>
-              )}
-              {pricing.cacheWritePricePerMillion && (
-                <div>
-                  <p className="text-xs text-gray-500">Cache Write ($/1M)</p>
-                  <p className="text-xl font-mono font-semibold text-gray-900">
-                    {formatPrice(pricing.cacheWritePricePerMillion)}
-                  </p>
-                </div>
-              )}
-              {pricing.webSearchPrice && (
-                <div>
-                  <p className="text-xs text-gray-500">Web Search ($/call)</p>
-                  <p className="text-xl font-mono font-semibold text-gray-900">
-                    {formatPrice(pricing.webSearchPrice)}
-                  </p>
-                </div>
-              )}
-            </div>
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <p className="text-xs text-gray-400">
-                Last updated: {formatDate(pricing.createdAt)} · Source: {pricing.source}
-              </p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6 text-center text-gray-500">
+          <Card className="mb-6 p-12 text-center text-gray-500">
             Pricing data unavailable for this model.
-          </div>
+          </Card>
         )}
 
         {/* Specs */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Specifications
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div>
-              <p className="text-xs text-gray-500">Context Window</p>
-              <p className="text-sm font-mono font-semibold text-gray-900">
-                {formatContext(model.contextWindow)}
-              </p>
-            </div>
-            {model.maxOutputTokens && (
+        <Card className="mb-6">
+          <CardContent className="p-8">
+            <h2 className="mb-6 text-lg font-semibold text-ink-900">
+              Specifications
+            </h2>
+            <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
               <div>
-                <p className="text-xs text-gray-500">Max Output</p>
-                <p className="text-sm font-mono font-semibold text-gray-900">
-                  {formatContext(model.maxOutputTokens)}
+                <p className="text-xs font-medium text-gray-500">Context Window</p>
+                <p className="mt-1 font-mono text-lg font-semibold text-ink-900">
+                  {formatContext(model.contextWindow)}
                 </p>
               </div>
-            )}
-            {model.releaseDate && (
-              <div>
-                <p className="text-xs text-gray-500">Release Date</p>
-                <p className="text-sm font-semibold text-gray-900">
-                  {formatDate(model.releaseDate)}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Modalities */}
-          <div className="mt-4">
-            <p className="text-xs text-gray-500 mb-1">Modalities</p>
-            <div className="flex flex-wrap gap-1.5">
-              {model.modality.map((mod) => (
-                <Badge key={mod} variant="secondary">
-                  {mod}
-                </Badge>
-              ))}
+              {model.maxOutputTokens && (
+                <div>
+                  <p className="text-xs font-medium text-gray-500">Max Output</p>
+                  <p className="mt-1 font-mono text-lg font-semibold text-ink-900">
+                    {formatContext(model.maxOutputTokens)}
+                  </p>
+                </div>
+              )}
+              {model.releaseDate && (
+                <div>
+                  <p className="text-xs font-medium text-gray-500">Release Date</p>
+                  <p className="mt-1 text-lg font-semibold text-ink-900">
+                    {formatDate(model.releaseDate)}
+                  </p>
+                </div>
+              )}
             </div>
-          </div>
 
-          {/* Capabilities */}
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-            <CapabilityItem label="Function Calling" supported={model.supportsFunctionCalling} />
-            <CapabilityItem label="Streaming" supported={model.supportsStreaming} />
-            <CapabilityItem label="Batch" supported={model.supportsBatch} />
-            <CapabilityItem label="Structured Output" supported={model.supportsStructuredOutput} />
-          </div>
-        </div>
+            <div className="mt-6">
+              <p className="mb-2 text-xs font-medium text-gray-500">Modalities</p>
+              <div className="flex flex-wrap gap-2">
+                {model.modality.map((mod) => (
+                  <Badge key={mod} variant="accent">
+                    {mod}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+              <CapabilityItem label="Function Calling" supported={model.supportsFunctionCalling} />
+              <CapabilityItem label="Streaming" supported={model.supportsStreaming} />
+              <CapabilityItem label="Batch" supported={model.supportsBatch} />
+              <CapabilityItem label="Structured Output" supported={model.supportsStructuredOutput} />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Price History */}
         {priceHistory && priceHistory.history.length > 0 && (
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Price History
-            </h2>
-            <PriceHistory history={priceHistory.history} />
-          </div>
+          <Card>
+            <CardContent className="p-8">
+              <h2 className="mb-4 text-lg font-semibold text-ink-900">
+                Price History
+              </h2>
+              <PriceHistory history={priceHistory.history} />
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>
@@ -226,13 +247,13 @@ function CapabilityItem({
   supported: boolean;
 }) {
   return (
-    <div className="flex items-center gap-1.5">
+    <div className={`flex items-center gap-2 rounded-lg border p-3 ${supported ? "border-brand-200 bg-brand-50/50" : "border-gray-200 bg-gray-50"}`}>
       {supported ? (
-        <Check className="h-4 w-4 text-green-600" />
+        <Check className="h-4 w-4 text-brand-600" />
       ) : (
         <X className="h-4 w-4 text-gray-300" />
       )}
-      <span className={supported ? "text-sm text-gray-900" : "text-sm text-gray-400"}>
+      <span className={`text-sm ${supported ? "font-medium text-ink-900" : "text-gray-400"}`}>
         {label}
       </span>
     </div>

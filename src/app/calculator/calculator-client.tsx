@@ -74,8 +74,14 @@ export default function CalculatorPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Cost Calculator</h1>
+      <div className="mx-auto max-w-6xl px-4 py-10">
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 rounded-full border border-spotlight-300 bg-spotlight-50 px-3 py-1 text-xs font-semibold text-spotlight-700">
+            CALCULATE
+          </div>
+          <h1 className="mt-3 text-3xl font-bold text-ink-900">Cost Calculator</h1>
+          <p className="mt-2 text-gray-500">Estimate your AI spend across models.</p>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 space-y-6">

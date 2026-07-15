@@ -103,8 +103,14 @@ export default function CompareClient() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Compare Models</h1>
+      <div className="mx-auto max-w-6xl px-4 py-10">
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
+            COMPARE
+          </div>
+          <h1 className="mt-3 text-3xl font-bold text-ink-900">Compare Models</h1>
+          <p className="mt-2 text-gray-500">Side-by-side analysis of up to 5 models.</p>
+        </div>
 
         <Card className="p-6 mb-6">
           <label className="text-sm font-medium text-gray-700 mb-2 block">
