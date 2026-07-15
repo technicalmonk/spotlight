@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export function Footer() {
   return (
     <footer className="border-t border-gray-200 bg-white">
@@ -19,16 +17,23 @@ export function Footer() {
             </p>
             <p>Built by Mill Pond Research</p>
           </div>
-          <div className="flex items-center gap-4">
-            <Link
-              href="https://github.com/millpondresearch/spotlight"
+          <div className="flex items-center gap-6">
+            <a
+              href="https://millpondresearch.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900"
+              className="text-sm text-gray-500 hover:text-gray-900"
             >
-              <span className="font-mono text-xs">GitHub</span>
-              <span>GitHub</span>
-            </Link>
+              Mill Pond Research
+            </a>
+            <a
+              href="https://xilos.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-gray-500 hover:text-gray-900"
+            >
+              Xilos
+            </a>
           </div>
         </div>
       </div>
