@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useQueryState } from "nuqs";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ComparisonTable } from "@/components/compare/comparison-table";
 import { PriceChart } from "@/components/compare/price-chart";
 import { calculateCost } from "@/lib/calculator";
 import { formatPrice } from "@/lib/utils";
+import { Check, X, Zap, Crown, TrendingDown } from "lucide-react";
 
 interface ComparisonModel {
   model: {
@@ -29,60 +31,97 @@ interface ComparisonModel {
   } | null;
 }
 
+interface ProviderGroup {
+  name: string;
+  slug: string;
+  description: string;
+  models: string[];
+  icon: string;
+  accent: string;
+}
+
+const providerGroups: ProviderGroup[] = [
+  {
+    name: "OpenAI",
+    slug: "openai",
+    description: "GPT-4o, GPT-4o mini, o1, o3 — the industry default",
+    models: ["gpt-4o", "gpt-4o-mini", "o1", "o3-mini"],
+    icon: "O",
+    accent: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+  {
+    name: "Anthropic",
+    slug: "anthropic",
+    description: "Claude 3.5 Sonnet, Opus, Haiku — strong reasoning and safety",
+    models: ["claude-3-5-sonnet", "claude-3-opus", "claude-3-5-haiku"],
+    icon: "A",
+    accent: "bg-orange-50 text-orange-700 border-orange-200",
+  },
+  {
+    name: "Google",
+    slug: "google",
+    description: "Gemini 2.0 Flash, Pro, 1.5 — massive context windows",
+    models: ["gemini-2-0-flash-001", "gemini-1-5-pro", "gemini-1-5-flash"],
+    icon: "G",
+    accent: "bg-blue-50 text-blue-700 border-blue-200",
+  },
+  {
+    name: "xAI (Grok)",
+    slug: "xai",
+    description: "Grok models from Elon Musk's xAI — real-time and uncensored",
+    models: ["grok-2", "grok-beta"],
+    icon: "X",
+    accent: "bg-gray-50 text-gray-700 border-gray-300",
+  },
+  {
+    name: "Open Source",
+    slug: "opensource",
+    description: "Llama, DeepSeek, Mistral, Qwen — self-hostable, cheapest at scale",
+    models: ["deepseek-chat", "llama-3-3-70b-instruct", "mistral-large", "qwen-2-5-72b-instruct"],
+    icon: "OS",
+    accent: "bg-spotlight-50 text-spotlight-700 border-spotlight-300",
+  },
+];
+
 export default function CompareClient() {
   const [modelSlugs, setModelSlugs] = useQueryState("models", { defaultValue: "" });
   const [inputTokens, setInputTokens] = useQueryState("input", { defaultValue: "1000" });
   const [outputTokens, setOutputTokens] = useQueryState("output", { defaultValue: "500" });
   const [requestsPerDay, setRequestsPerDay] = useQueryState("rpd", { defaultValue: "1000" });
-  const [search, setSearch] = useState("");
-  const [searchResults, setSearchResults] = useState<{ slug: string; name: string }[]>([]);
   const [comparisonData, setComparisonData] = useState<ComparisonModel[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const slugs = modelSlugs ? modelSlugs.split(",").filter(Boolean) : [];
 
-  // Derived state: no results when search is too short
-  const visibleSearchResults = search.length < 2 ? [] : searchResults;
-
-  useEffect(() => {
-    if (search.length < 2) return;
-    const timer = setTimeout(() => {
-      fetch(`/api/models?search=${encodeURIComponent(search)}&limit=10`)
-        .then((r) => r.json())
-        .then((data) => {
-          setSearchResults(data.models.map((m: { model: { slug: string; name: string } }) => ({ slug: m.model.slug, name: m.model.name })));
-        })
-        .catch(console.error);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search]);
-
   useEffect(() => {
     if (slugs.length < 2) return;
-    const slugParam = slugs.join(",");
-    fetch(`/api/compare?models=${slugParam}`)
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loading state before async fetch
+    setLoading(true);
+    fetch(`/api/compare?models=${slugs.join(",")}`)
       .then((r) => r.json())
-      .then((data) => setComparisonData(data.models))
-      .catch(console.error);
+      .then((data) => {
+        if (!cancelled) setComparisonData(data.models);
+      })
+      .catch(console.error)
+      .finally(() => { if (!cancelled) setLoading(false); });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- slugs derives from modelSlugs
+    return () => { cancelled = true; };
   }, [modelSlugs]);
 
-  const addModel = (slug: string) => {
-    if (slugs.length >= 5) return;
-    if (!slugs.includes(slug)) {
+  const toggleModel = (slug: string) => {
+    if (slugs.includes(slug)) {
+      setModelSlugs(slugs.filter((s) => s !== slug).join(","));
+    } else if (slugs.length < 8) {
       setModelSlugs([...slugs, slug].join(","));
     }
-    setSearch("");
-    setSearchResults([]);
   };
 
-  const removeModel = (slug: string) => {
-    setModelSlugs(slugs.filter((s) => s !== slug).join(","));
+  const selectPreset = (group: ProviderGroup) => {
+    setModelSlugs(group.models.join(","));
   };
 
-  // Only show comparison data when 2+ slugs selected
-  const validModels = slugs.length >= 2
-    ? comparisonData.filter((m) => m.model && m.pricing)
-    : [];
+  const validModels = comparisonData.filter((m) => m.model && m.pricing);
 
   const costCalculations = validModels.map((m) => {
     const calc = calculateCost(
@@ -94,11 +133,15 @@ export default function CompareClient() {
       parseInt(outputTokens, 10) || 0,
       parseInt(requestsPerDay, 10) || 0,
     );
-    return { name: m.model.name, monthly: calc.monthly };
+    return { name: m.model.name, slug: m.model.slug, monthly: calc.monthly, inputPrice: parseFloat(m.pricing!.inputPricePerMillion), outputPrice: parseFloat(m.pricing!.outputPricePerMillion) };
   });
 
   const bestValue = costCalculations.length > 0
     ? costCalculations.reduce((min, curr) => (curr.monthly < min.monthly ? curr : min))
+    : null;
+
+  const cheapestInput = costCalculations.length > 0
+    ? costCalculations.reduce((min, curr) => (curr.inputPrice < min.inputPrice ? curr : min))
     : null;
 
   return (
@@ -109,105 +152,242 @@ export default function CompareClient() {
             COMPARE
           </div>
           <h1 className="mt-3 text-3xl font-bold text-ink-900">Compare Models</h1>
-          <p className="mt-2 text-gray-500">Side-by-side analysis of up to 5 models.</p>
+          <p className="mt-2 text-gray-500">Select models from major providers, or start with a preset. Compare up to 8 models.</p>
         </div>
 
-        <Card className="p-6 mb-6">
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
-            Add models to compare ({slugs.length}/5)
-          </label>
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search models to add..."
-            disabled={slugs.length >= 5}
-          />
-          {visibleSearchResults.length > 0 && (
-            <div className="mt-2 border border-gray-200 rounded-md shadow-sm max-h-48 overflow-auto">
-              {visibleSearchResults.map((m) => (
-                <button
-                  key={m.slug}
-                  onClick={() => addModel(m.slug)}
-                  className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0"
-                >
-                  {m.name}
-                </button>
-              ))}
-            </div>
-          )}
-          {slugs.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              {slugs.map((slug) => (
-                <span key={slug} className="inline-flex items-center gap-1.5 bg-gray-100 rounded-md px-2.5 py-1 text-sm">
-                  {slug}
-                  <button onClick={() => removeModel(slug)} className="text-gray-400 hover:text-gray-600">x</button>
-                </span>
-              ))}
-            </div>
-          )}
-        </Card>
-
-        {slugs.length >= 2 && validModels.length > 0 && (
-          <>
-            <Card className="p-6 mb-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Feature and Price Comparison</h3>
-              <ComparisonTable models={validModels} />
-            </Card>
-
-            <Card className="p-6 mb-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Price Chart</h3>
-              <PriceChart
-                models={validModels.map((m) => ({
-                  name: m.model.name,
-                  inputPrice: parseFloat(m.pricing!.inputPricePerMillion),
-                  outputPrice: parseFloat(m.pricing!.outputPricePerMillion),
-                }))}
-              />
-            </Card>
-
-            <Card className="p-6 mb-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Usage Pattern and Best Value</h3>
-              <div className="grid grid-cols-3 gap-4 mb-4">
-                <div>
-                  <label className="text-xs text-gray-500">Input tokens</label>
-                  <Input type="number" value={inputTokens} onChange={(e) => setInputTokens(e.target.value)} className="font-mono" />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500">Output tokens</label>
-                  <Input type="number" value={outputTokens} onChange={(e) => setOutputTokens(e.target.value)} className="font-mono" />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500">Requests/day</label>
-                  <Input type="number" value={requestsPerDay} onChange={(e) => setRequestsPerDay(e.target.value)} className="font-mono" />
-                </div>
-              </div>
-
-              {bestValue && (
-                <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
-                  <p className="text-sm text-brand-800">
-                    <span className="font-semibold">Best value: {bestValue.name}</span> at {formatPrice(bestValue.monthly)}/month
-                  </p>
-                </div>
-              )}
-
-              <div className="mt-4 space-y-2">
-                {costCalculations.map((c) => (
-                  <div key={c.name} className="flex justify-between text-sm">
-                    <span className="text-gray-700">{c.name}</span>
-                    <span className="font-mono">{formatPrice(c.monthly)}/month</span>
+        {/* Provider group cards */}
+        <div className="mb-8">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500">Quick start — compare by provider</h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {providerGroups.map((group) => (
+              <button
+                key={group.slug}
+                onClick={() => selectPreset(group)}
+                className={`group rounded-xl border bg-white p-4 text-left shadow-sm transition-all hover:border-brand-300 hover:shadow-md ${slugs.length > 0 && group.models.every((m) => slugs.includes(m)) ? "border-brand-400 ring-2 ring-brand-100" : "border-gray-200"}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg border text-sm font-bold ${group.accent}`}>
+                    {group.icon}
                   </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-ink-900">{group.name}</h3>
+                    <p className="text-xs text-gray-500">{group.models.length} models</p>
+                  </div>
+                  {slugs.length > 0 && group.models.every((m) => slugs.includes(m)) && (
+                    <Check className="h-4 w-4 text-brand-600" />
+                  )}
+                </div>
+                <p className="mt-2 text-xs text-gray-500 line-clamp-2">{group.description}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Selected models */}
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-semibold text-ink-900">Selected models ({slugs.length}/8)</h3>
+              {slugs.length > 0 && (
+                <button onClick={() => setModelSlugs("")} className="text-sm text-gray-500 hover:text-gray-700">
+                  Clear all
+                </button>
+              )}
+            </div>
+            {slugs.length === 0 ? (
+              <p className="text-sm text-gray-400">Select a provider preset above or search below to add individual models.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {slugs.map((slug) => (
+                  <span key={slug} className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-gray-50 px-3 py-1 text-sm">
+                    {slug}
+                    <button onClick={() => toggleModel(slug)} className="text-gray-400 hover:text-gray-600">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
                 ))}
               </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Individual model search */}
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <ModelSearch selected={slugs} onToggle={toggleModel} />
+          </CardContent>
+        </Card>
+
+        {/* Usage pattern */}
+        {slugs.length >= 2 && (
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <h3 className="mb-4 font-semibold text-ink-900">Your usage pattern</h3>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                  <label className="text-xs text-gray-500">Input tokens / request</label>
+                  <Input type="number" value={inputTokens} onChange={(e) => setInputTokens(e.target.value)} className="mt-1 font-mono" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Output tokens / request</label>
+                  <Input type="number" value={outputTokens} onChange={(e) => setOutputTokens(e.target.value)} className="mt-1 font-mono" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Requests / day</label>
+                  <Input type="number" value={requestsPerDay} onChange={(e) => setRequestsPerDay(e.target.value)} className="mt-1 font-mono" />
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-gray-400">
+                Not sure about token counts? Use the <a href="/calculator" className="font-medium text-brand-600 hover:underline">Cost Calculator wizard</a> to estimate based on your industry and use case.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Loading */}
+        {loading && (
+          <Card className="mb-6 p-12 text-center text-gray-500">
+            Loading comparison data...
+          </Card>
+        )}
+
+        {/* Results */}
+        {slugs.length >= 2 && validModels.length > 0 && !loading && (
+          <>
+            {/* Highlight cards */}
+            {bestValue && cheapestInput && (
+              <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="rounded-xl border border-spotlight-300 bg-spotlight-50 p-5">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-spotlight-600" />
+                    <span className="text-sm font-semibold text-spotlight-700">BEST VALUE</span>
+                  </div>
+                  <p className="mt-2 text-lg font-bold text-ink-900">{bestValue.name}</p>
+                  <p className="text-sm text-gray-600">{formatPrice(bestValue.monthly)}/month at your usage</p>
+                </div>
+                <div className="rounded-xl border border-brand-200 bg-brand-50 p-5">
+                  <div className="flex items-center gap-2">
+                    <TrendingDown className="h-5 w-5 text-brand-600" />
+                    <span className="text-sm font-semibold text-brand-700">CHEAPEST INPUT</span>
+                  </div>
+                  <p className="mt-2 text-lg font-bold text-ink-900">{cheapestInput.name}</p>
+                  <p className="text-sm text-gray-600">{formatPrice(cheapestInput.inputPrice)}/1M input tokens</p>
+                </div>
+              </div>
+            )}
+
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h3 className="mb-4 font-semibold text-ink-900">Feature and Price Comparison</h3>
+                <ComparisonTable models={validModels} />
+              </CardContent>
+            </Card>
+
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h3 className="mb-4 font-semibold text-ink-900">Price Chart</h3>
+                <PriceChart
+                  models={validModels.map((m) => ({
+                    name: m.model.name,
+                    inputPrice: parseFloat(m.pricing!.inputPricePerMillion),
+                    outputPrice: parseFloat(m.pricing!.outputPricePerMillion),
+                  }))}
+                />
+              </CardContent>
+            </Card>
+
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h3 className="mb-4 font-semibold text-ink-900">Monthly cost at your usage</h3>
+                <div className="space-y-2">
+                  {costCalculations
+                    .sort((a, b) => a.monthly - b.monthly)
+                    .map((c, i) => (
+                      <div key={c.slug} className={`flex items-center justify-between rounded-lg px-4 py-3 ${i === 0 ? "bg-spotlight-50 border border-spotlight-200" : "bg-gray-50"}`}>
+                        <div className="flex items-center gap-2">
+                          {i === 0 && <Crown className="h-4 w-4 text-spotlight-600" />}
+                          <span className="text-sm font-medium text-ink-900">{c.name}</span>
+                          {i === 0 && <Badge variant="accent" className="text-xs">cheapest</Badge>}
+                        </div>
+                        <span className="font-mono text-sm font-semibold text-ink-900">{formatPrice(c.monthly)}/mo</span>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
             </Card>
           </>
         )}
 
+        {slugs.length >= 2 && validModels.length === 0 && !loading && (
+          <Card className="p-12 text-center text-gray-500">
+            No matching models found in the database. Try selecting different models.
+          </Card>
+        )}
+
         {slugs.length < 2 && (
           <Card className="p-12 text-center text-gray-500">
-            Select at least 2 models to compare (up to 5).
+            Select at least 2 models to compare (up to 8). Use a provider preset above to get started quickly.
           </Card>
         )}
       </div>
+    </div>
+  );
+}
+
+// Inline model search component
+function ModelSearch({ selected, onToggle }: { selected: string[]; onToggle: (slug: string) => void }) {
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState<{ slug: string; name: string; provider: string }[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (search.length < 2) return;
+    const timer = setTimeout(() => {
+      fetch(`/api/models?search=${encodeURIComponent(search)}&limit=15`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (cancelled) return;
+          setResults(data.models.map((m: { model: { slug: string; name: string }; provider: { name: string } | null }) => ({
+            slug: m.model.slug,
+            name: m.model.name,
+            provider: m.provider?.name ?? "Unknown",
+          })));
+        })
+        .catch(console.error);
+    }, 300);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [search]);
+
+  return (
+    <div>
+      <label className="text-sm font-medium text-gray-700">Search individual models</label>
+      <Input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Type a model name (e.g. GPT-4o, Claude, Gemini)..."
+        className="mt-2"
+      />
+      {results.length > 0 && (
+        <div className="mt-3 space-y-1">
+          {results.map((m) => (
+            <button
+              key={m.slug}
+              onClick={() => onToggle(m.slug)}
+              className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
+                selected.includes(m.slug)
+                  ? "border-brand-300 bg-brand-50 text-brand-700"
+                  : "border-gray-200 bg-white hover:bg-gray-50"
+              }`}
+            >
+              <span>
+                <span className="font-medium">{m.name}</span>
+                <span className="ml-2 text-gray-500">{m.provider}</span>
+              </span>
+              {selected.includes(m.slug) && <Check className="h-4 w-4 text-brand-600" />}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

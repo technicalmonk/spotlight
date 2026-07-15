@@ -226,6 +226,34 @@ export const usageScenarios = pgTable(
 );
 
 // ---------------------------------------------------------------------------
+// Lead Capture — self-selection data from calculator wizard
+// ---------------------------------------------------------------------------
+
+export const leadCaptures = pgTable(
+  "lead_captures",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    email: text("email").notNull(),
+    industry: text("industry").notNull(),
+    companySize: text("company_size").notNull(),
+    useCase: text("use_case").notNull(),
+    complexity: text("complexity").notNull(),
+    estimatedInputTokens: integer("estimated_input_tokens"),
+    estimatedOutputTokens: integer("estimated_output_tokens"),
+    estimatedDailyRequests: integer("estimated_daily_requests"),
+    estimatedMonthlyCost: numeric("estimated_monthly_cost", { precision: 10, scale: 4 }),
+    selectedModels: text("selected_models"),
+    metadata: text("metadata"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("lead_captures_email_idx").on(table.email),
+    index("lead_captures_industry_idx").on(table.industry),
+    index("lead_captures_created_at_idx").on(table.createdAt),
+  ],
+);
+
+// ---------------------------------------------------------------------------
 // Inferred Types (for use throughout the app)
 // ---------------------------------------------------------------------------
 
@@ -234,9 +262,11 @@ export type Model = typeof models.$inferSelect;
 export type PricingTier = typeof pricingTiers.$inferSelect;
 export type PriceChangeLog = typeof priceChangeLogs.$inferSelect;
 export type UsageScenario = typeof usageScenarios.$inferSelect;
+export type LeadCapture = typeof leadCaptures.$inferSelect;
 
 export type NewProvider = typeof providers.$inferInsert;
 export type NewModel = typeof models.$inferInsert;
 export type NewPricingTier = typeof pricingTiers.$inferInsert;
 export type NewPriceChangeLog = typeof priceChangeLogs.$inferInsert;
 export type NewUsageScenario = typeof usageScenarios.$inferInsert;
+export type NewLeadCapture = typeof leadCaptures.$inferInsert;
