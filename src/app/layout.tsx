@@ -5,14 +5,14 @@ import { Footer } from "@/components/layout/footer";
 import NuqsProvider from "@/components/providers/nuqs-provider";
 
 export const metadata: Metadata = {
-  title: "Spotlight — LLM Pricing Comparison",
+  title: "Xilos Spotlight — LLM Pricing Comparison",
   description:
-    "Compare LLM pricing across every major provider. Real-time costs, accurate estimates, and side-by-side model comparisons for 300+ AI models.",
+    "Compare LLM pricing across every major provider with Xilos Spotlight. Real-time costs, accurate estimates, and side-by-side model comparisons for 300+ AI models.",
   metadataBase: new URL("https://spotlight.ai"),
   openGraph: {
-    title: "Spotlight — LLM Pricing Comparison",
+    title: "Xilos Spotlight — LLM Pricing Comparison",
     description:
-      "Compare LLM pricing across every major provider. Real-time costs and accurate estimates for 300+ AI models.",
+      "Compare LLM pricing across every major provider with Xilos Spotlight. Real-time costs and accurate estimates for 300+ AI models.",
     type: "website",
   },
 };

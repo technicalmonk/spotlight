@@ -9,7 +9,9 @@ import { cn } from "@/lib/utils";
 const navLinks = [
   { href: "/models", label: "Models" },
   { href: "/calculator", label: "Calculator" },
+  { href: "/optimizer", label: "Optimizer" },
   { href: "/compare", label: "Compare" },
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/scenarios", label: "Scenarios" },
 ];
 
@@ -36,8 +38,8 @@ export function Header() {
             </div>
             <div className="absolute inset-0 -z-10 rounded-lg bg-spotlight-400/30 blur-md transition-opacity group-hover:bg-spotlight-400/50" />
           </div>
-          <span className="text-lg font-bold tracking-tight text-ink-900">
-            Spotlight
+          <span className="text-lg font-bold tracking-tight">
+            <span className="text-gray-400">Xilos</span> <span className="text-ink-900">Spotlight</span>
           </span>
         </Link>
 

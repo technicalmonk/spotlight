@@ -3,8 +3,9 @@ import { FeaturedScenarios } from "@/components/home/featured-scenarios";
 import { getFeaturedScenarios, getTotalModelCount, getIngestionStatus } from "@/db/queries";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDateTime } from "@/lib/utils";
-import { Activity, Database, TrendingDown, Zap } from "lucide-react";
+import { Activity, Database, TrendingDown, Zap, Gauge, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +45,26 @@ export default async function HomePage() {
             <Database className="h-4 w-4 text-spotlight-400" />
             <span>{status.totalModels} models · {status.totalProviders} providers</span>
           </div>
+        </div>
+      </section>
+
+      {/* Your Current Scenario CTA */}
+      <section className="border-b border-gray-200 bg-gradient-to-r from-brand-50 to-spotlight-50">
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 py-8 sm:flex-row sm:px-6 lg:px-8">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-ink-900">
+              <Gauge className="h-6 w-6 text-spotlight-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-ink-900">Already using an AI model?</h2>
+              <p className="text-sm text-gray-600">See how much you could save by switching to a cheaper alternative via Xilos WorkBench.</p>
+            </div>
+          </div>
+          <Link href="/optimizer" className="sm:ml-auto">
+            <Button size="lg" variant="accent">
+              Your Current Scenario <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </section>
 

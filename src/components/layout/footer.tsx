@@ -16,7 +16,7 @@ export function Footer() {
                 </svg>
               </div>
               <span className="text-base font-bold tracking-tight text-ink-900">
-                Spotlight
+                Xilos Spotlight
               </span>
             </div>
             <p className="text-sm text-gray-500">
@@ -44,24 +44,14 @@ export function Footer() {
               <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
                 Built by
               </p>
-              <div className="flex flex-col gap-1 sm:flex-row sm:gap-4">
-                <a
-                  href="https://millpondresearch.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 hover:text-brand-600"
-                >
-                  Mill Pond Research
-                </a>
-                <a
-                  href="https://xilos.ai"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 hover:text-brand-600"
-                >
-                  Xilos
-                </a>
-              </div>
+              <a
+                href="https://xilos.ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-gray-600 hover:text-brand-600"
+              >
+                Xilos
+              </a>
             </div>
           </div>
         </div>
