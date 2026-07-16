@@ -8,33 +8,7 @@ import { Input } from "@/components/ui/input";
 import { calculateCost } from "@/lib/calculator";
 import { formatPrice } from "@/lib/utils";
 import { ArrowRight, ArrowLeft, Check, ChevronDown, TrendingDown, TrendingUp, Sparkles, Mail, PiggyBank } from "lucide-react";
-
-interface FriendlyModel {
-  label: string;
-  provider: string;
-  slug: string;
-  inputPricePerMillion: number;
-  outputPricePerMillion: number;
-}
-
-// Friendly model names — people think "ChatGPT" not "gpt-4o"
-const friendlyModels: FriendlyModel[] = [
-  { label: "ChatGPT (GPT-4o)", provider: "OpenAI", slug: "gpt-4o", inputPricePerMillion: 2.5, outputPricePerMillion: 10 },
-  { label: "ChatGPT (GPT-4o mini)", provider: "OpenAI", slug: "gpt-4o-mini", inputPricePerMillion: 0.15, outputPricePerMillion: 0.6 },
-  { label: "ChatGPT (o1)", provider: "OpenAI", slug: "o1", inputPricePerMillion: 15, outputPricePerMillion: 60 },
-  { label: "ChatGPT (o3 mini)", provider: "OpenAI", slug: "o3-mini", inputPricePerMillion: 1.1, outputPricePerMillion: 4.4 },
-  { label: "Claude (3.5 Sonnet)", provider: "Anthropic", slug: "claude-3-5-sonnet", inputPricePerMillion: 3, outputPricePerMillion: 15 },
-  { label: "Claude (3 Opus)", provider: "Anthropic", slug: "claude-3-opus", inputPricePerMillion: 15, outputPricePerMillion: 75 },
-  { label: "Claude (3.5 Haiku)", provider: "Anthropic", slug: "claude-3-5-haiku", inputPricePerMillion: 0.25, outputPricePerMillion: 1.25 },
-  { label: "Gemini (2.0 Flash)", provider: "Google", slug: "gemini-2-0-flash-001", inputPricePerMillion: 0.1, outputPricePerMillion: 0.4 },
-  { label: "Gemini (1.5 Pro)", provider: "Google", slug: "gemini-1-5-pro", inputPricePerMillion: 1.25, outputPricePerMillion: 5 },
-  { label: "Gemini (1.5 Flash)", provider: "Google", slug: "gemini-1-5-flash", inputPricePerMillion: 0.075, outputPricePerMillion: 0.3 },
-  { label: "Grok (2)", provider: "xAI", slug: "grok-2", inputPricePerMillion: 2, outputPricePerMillion: 10 },
-  { label: "DeepSeek (Chat)", provider: "DeepSeek", slug: "deepseek-chat", inputPricePerMillion: 0.14, outputPricePerMillion: 0.28 },
-  { label: "Llama (3.3 70B)", provider: "Meta", slug: "llama-3-3-70b-instruct", inputPricePerMillion: 0.23, outputPricePerMillion: 0.4 },
-  { label: "Mistral (Large)", provider: "Mistral", slug: "mistral-large", inputPricePerMillion: 2, outputPricePerMillion: 6 },
-  { label: "Qwen (2.5 72B)", provider: "Qwen", slug: "qwen-2-5-72b-instruct", inputPricePerMillion: 0.35, outputPricePerMillion: 0.4 },
-];
+import { benchmarkModels as friendlyModels, intelligenceColor } from "@/lib/benchmarks";
 
 const industries = [
   { value: "saas", label: "SaaS / Software" },
@@ -429,6 +403,9 @@ export default function CalculatorPage() {
                       <div className={`mt-3 inline-block rounded-lg px-3 py-1 font-mono text-sm font-bold ${costColor(m.monthly)}`}>
                         {formatPrice(m.monthly)}/mo
                       </div>
+                      <div className="mt-2">
+                        <span className={`text-xs font-medium ${intelligenceColor(m.intelligenceIndex)}`}>Intelligence: {m.intelligenceIndex ?? "N/A"}</span>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -453,6 +430,9 @@ export default function CalculatorPage() {
                       <p className="text-xs text-gray-500">{m.provider} via Xilos WorkBench</p>
                       <div className={`mt-3 inline-block rounded-lg px-3 py-1 font-mono text-sm font-bold ${costColor(m.monthly)}`}>
                         {formatPrice(m.monthly)}/mo
+                      </div>
+                      <div className="mt-2">
+                        <span className={`text-xs font-medium ${intelligenceColor(m.intelligenceIndex)}`}>Intelligence: {m.intelligenceIndex ?? "N/A"}</span>
                       </div>
                       {m.slug !== selectedModelSlug && savings > 0 && (
                         <p className="mt-2 text-xs font-semibold text-green-600">

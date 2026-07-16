@@ -10,6 +10,7 @@ import { PriceChart } from "@/components/compare/price-chart";
 import { calculateCost } from "@/lib/calculator";
 import { formatPrice } from "@/lib/utils";
 import { Check, X, Zap, Crown, TrendingDown } from "lucide-react";
+import { providerGroups } from "@/lib/benchmarks";
 
 interface ComparisonModel {
   model: {
@@ -30,58 +31,6 @@ interface ComparisonModel {
     batchOutputPricePerMillion: string | null;
   } | null;
 }
-
-interface ProviderGroup {
-  name: string;
-  slug: string;
-  description: string;
-  models: string[];
-  icon: string;
-  accent: string;
-}
-
-const providerGroups: ProviderGroup[] = [
-  {
-    name: "OpenAI",
-    slug: "openai",
-    description: "GPT-4o, GPT-4o mini, o1, o3 — the industry default",
-    models: ["gpt-4o", "gpt-4o-mini", "o1", "o3-mini"],
-    icon: "O",
-    accent: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  },
-  {
-    name: "Anthropic",
-    slug: "anthropic",
-    description: "Claude 3.5 Sonnet, Opus, Haiku — strong reasoning and safety",
-    models: ["claude-3-5-sonnet", "claude-3-opus", "claude-3-5-haiku"],
-    icon: "A",
-    accent: "bg-orange-50 text-orange-700 border-orange-200",
-  },
-  {
-    name: "Google",
-    slug: "google",
-    description: "Gemini 2.0 Flash, Pro, 1.5 — massive context windows",
-    models: ["gemini-2-0-flash-001", "gemini-1-5-pro", "gemini-1-5-flash"],
-    icon: "G",
-    accent: "bg-blue-50 text-blue-700 border-blue-200",
-  },
-  {
-    name: "xAI (Grok)",
-    slug: "xai",
-    description: "Grok models from Elon Musk's xAI — real-time and uncensored",
-    models: ["grok-2", "grok-beta"],
-    icon: "X",
-    accent: "bg-gray-50 text-gray-700 border-gray-300",
-  },
-  {
-    name: "Open Source",
-    slug: "opensource",
-    description: "Llama, DeepSeek, Mistral, Qwen — self-hostable, cheapest at scale",
-    models: ["deepseek-chat", "llama-3-3-70b-instruct", "mistral-large", "qwen-2-5-72b-instruct"],
-    icon: "OS",
-    accent: "bg-spotlight-50 text-spotlight-700 border-spotlight-300",
-  },
-];
 
 export default function CompareClient() {
   const [modelSlugs, setModelSlugs] = useQueryState("models", { defaultValue: "" });
@@ -117,7 +66,7 @@ export default function CompareClient() {
     }
   };
 
-  const selectPreset = (group: ProviderGroup) => {
+  const selectPreset = (group: { models: string[] }) => {
     setModelSlugs(group.models.join(","));
   };
 

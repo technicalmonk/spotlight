@@ -90,17 +90,17 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <Link href="/compare?models=gpt-4o,claude-3-5-sonnet,gemini-1-5-pro" className="group">
+          <Link href="/compare?models=gpt-5-6-sol,claude-opus-4-8,gemini-3-1-pro" className="group">
             <Card className="card-hover-lift h-full overflow-hidden">
               <CardContent className="p-6">
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50">
                   <TrendingDown className="h-6 w-6 text-brand-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-ink-900">
-                  GPT-4o vs Claude 3.5 vs Gemini 1.5
+                  GPT-5.6 vs Claude 4.8 vs Gemini 3.1
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Flagship model showdown
+                  Frontier model showdown
                 </p>
                 <p className="mt-4 text-sm font-semibold text-brand-600 opacity-0 transition-opacity group-hover:opacity-100">
                   Compare now →
@@ -109,7 +109,7 @@ export default async function HomePage() {
             </Card>
           </Link>
 
-          <Link href="/compare?models=gpt-4o-mini,claude-3-5-haiku,gemini-1-5-flash" className="group">
+          <Link href="/compare?models=gpt-5-4-mini,claude-4-5-haiku,gemini-3-1-flash-lite" className="group">
             <Card className="card-hover-lift h-full overflow-hidden">
               <CardContent className="p-6">
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-spotlight-50">
@@ -128,14 +128,14 @@ export default async function HomePage() {
             </Card>
           </Link>
 
-          <Link href="/compare?models=gpt-4o,claude-3-opus,deepseek-chat" className="group">
+          <Link href="/compare?models=gpt-5-6-sol,deepseek-v4-pro,glm-5-2" className="group">
             <Card className="card-hover-lift h-full overflow-hidden">
               <CardContent className="p-6">
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50">
                   <Activity className="h-6 w-6 text-brand-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-ink-900">
-                  Premium vs Budget
+                  Premium vs Open Source
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Is the premium tier worth it?

@@ -9,36 +9,7 @@ import { calculateCost } from "@/lib/calculator";
 import { formatPrice } from "@/lib/utils";
 import { ArrowRight, ArrowLeft, Check, ChevronDown, TrendingDown, TrendingUp, Sparkles, Mail, PiggyBank, AlertTriangle, X } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
-
-interface FriendlyModel {
-  label: string;
-  provider: string;
-  slug: string;
-  inputPricePerMillion: number;
-  outputPricePerMillion: number;
-  inWorkBench: boolean;
-}
-
-const friendlyModels: FriendlyModel[] = [
-  { label: "GPT-4o", provider: "OpenAI", slug: "gpt-4o", inputPricePerMillion: 2.5, outputPricePerMillion: 10, inWorkBench: true },
-  { label: "GPT-4o mini", provider: "OpenAI", slug: "gpt-4o-mini", inputPricePerMillion: 0.15, outputPricePerMillion: 0.6, inWorkBench: true },
-  { label: "o1", provider: "OpenAI", slug: "o1", inputPricePerMillion: 15, outputPricePerMillion: 60, inWorkBench: false },
-  { label: "o3 mini", provider: "OpenAI", slug: "o3-mini", inputPricePerMillion: 1.1, outputPricePerMillion: 4.4, inWorkBench: true },
-  { label: "Claude 3.5 Sonnet", provider: "Anthropic", slug: "claude-3-5-sonnet", inputPricePerMillion: 3, outputPricePerMillion: 15, inWorkBench: true },
-  { label: "Claude 3 Opus", provider: "Anthropic", slug: "claude-3-opus", inputPricePerMillion: 15, outputPricePerMillion: 75, inWorkBench: false },
-  { label: "Claude 3.5 Haiku", provider: "Anthropic", slug: "claude-3-5-haiku", inputPricePerMillion: 0.25, outputPricePerMillion: 1.25, inWorkBench: true },
-  { label: "Gemini 2.0 Flash", provider: "Google", slug: "gemini-2-0-flash-001", inputPricePerMillion: 0.1, outputPricePerMillion: 0.4, inWorkBench: true },
-  { label: "Gemini 1.5 Pro", provider: "Google", slug: "gemini-1-5-pro", inputPricePerMillion: 1.25, outputPricePerMillion: 5, inWorkBench: true },
-  { label: "Gemini 1.5 Flash", provider: "Google", slug: "gemini-1-5-flash", inputPricePerMillion: 0.075, outputPricePerMillion: 0.3, inWorkBench: true },
-  { label: "Grok 2", provider: "xAI", slug: "grok-2", inputPricePerMillion: 2, outputPricePerMillion: 10, inWorkBench: false },
-  { label: "DeepSeek Chat", provider: "DeepSeek", slug: "deepseek-chat", inputPricePerMillion: 0.14, outputPricePerMillion: 0.28, inWorkBench: true },
-  { label: "Llama 3.3 70B", provider: "Meta", slug: "llama-3-3-70b-instruct", inputPricePerMillion: 0.23, outputPricePerMillion: 0.4, inWorkBench: true },
-  { label: "Mistral Large", provider: "Mistral", slug: "mistral-large", inputPricePerMillion: 2, outputPricePerMillion: 6, inWorkBench: true },
-  { label: "Qwen 2.5 72B", provider: "Qwen", slug: "qwen-2-5-72b-instruct", inputPricePerMillion: 0.35, outputPricePerMillion: 0.4, inWorkBench: true },
-];
-
-// Top 5 frontier models by user base (for "no current scenario" mode)
-const topFrontierModels = ["gpt-4o", "claude-3-5-sonnet", "gemini-1-5-pro", "gpt-4o-mini", "claude-3-5-haiku"];
+import { benchmarkModels as friendlyModels, topFrontierSlugs, intelligenceColor } from "@/lib/benchmarks";
 
 const volumeLevels = [
   { value: "low", label: "Low", detail: "1-10 employees · ~100 req/day", reqPerDay: 100 },
@@ -77,7 +48,7 @@ export default function OptimizerClient() {
 
   // If no scenario, use top 5 frontier models
   const displayModels = hasScenario === false
-    ? allCosts.filter((m) => topFrontierModels.includes(m.slug))
+    ? allCosts.filter((m) => topFrontierSlugs.includes(m.slug))
     : allCosts;
 
   const currentMonthly = selectedModel ? allCosts.find((m) => m.slug === selectedModelSlug)?.monthly ?? 0 : 0;
@@ -132,7 +103,7 @@ export default function OptimizerClient() {
           estimatedOutputTokens: outputTokens,
           estimatedDailyRequests: reqPerDay,
           estimatedMonthlyCost: currentMonthly,
-          selectedModels: selectedModelSlug || topFrontierModels.join(","),
+          selectedModels: selectedModelSlug || topFrontierSlugs.join(","),
           metadata: JSON.stringify({ source: "optimizer", hasScenario }),
         }),
       });
@@ -404,6 +375,7 @@ export default function OptimizerClient() {
                       <th className="py-3 px-4 font-semibold text-gray-700">Provider</th>
                       <th className="py-3 px-4 font-semibold text-gray-700">Monthly Cost</th>
                       <th className="py-3 px-4 font-semibold text-gray-700">Savings</th>
+                      <th className="py-3 px-4 font-semibold text-gray-700">Intelligence</th>
                       <th className="py-3 px-4 font-semibold text-gray-700">In WorkBench?</th>
                     </tr>
                   </thead>
@@ -419,6 +391,9 @@ export default function OptimizerClient() {
                         </td>
                         <td className="py-3 px-4 font-mono text-green-600">
                           {formatPrice(currentMonthly - m.monthly)}/mo
+                        </td>
+                        <td className={`py-3 px-4 text-sm font-medium ${intelligenceColor(m.intelligenceIndex)}`}>
+                          {m.intelligenceIndex ?? "N/A"}
                         </td>
                         <td className="py-3 px-4">
                           {m.inWorkBench ? (
@@ -455,6 +430,7 @@ export default function OptimizerClient() {
                       <th className="py-3 px-4 font-semibold text-gray-700">Input $/1M</th>
                       <th className="py-3 px-4 font-semibold text-gray-700">Output $/1M</th>
                       <th className="py-3 px-4 font-semibold text-gray-700">Monthly Cost</th>
+                      <th className="py-3 px-4 font-semibold text-gray-700">Intelligence</th>
                       <th className="py-3 px-4 font-semibold text-gray-700">In WorkBench?</th>
                     </tr>
                   </thead>
@@ -469,6 +445,9 @@ export default function OptimizerClient() {
                           <span className={`rounded-md px-2 py-0.5 font-mono font-medium ${costColor(m.monthly)}`}>
                             {formatPrice(m.monthly)}/mo
                           </span>
+                        </td>
+                        <td className={`py-3 px-4 text-sm font-medium ${intelligenceColor(m.intelligenceIndex)}`}>
+                          {m.intelligenceIndex ?? "N/A"}
                         </td>
                         <td className="py-3 px-4">
                           {m.inWorkBench ? (

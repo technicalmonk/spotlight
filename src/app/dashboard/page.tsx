@@ -1,8 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { getAllModels, getScenarios } from "@/db/queries";
-import { calculateCost, formatCost } from "@/lib/calculator";
+import { calculateCost } from "@/lib/calculator";
 import { formatPrice } from "@/lib/utils";
 import type { ModelWithPricing, UsageScenario } from "@/lib/types";
+import { benchmarkModels, intelligenceColor, speedColor } from "@/lib/benchmarks";
 
 export const dynamic = "force-dynamic";
 
@@ -10,18 +11,18 @@ export const dynamic = "force-dynamic";
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Top 10 most popular models by user base, ordered by estimated popularity. */
+/** Top 10 most popular models by user base — uses latest 2026 model names. */
 const TOP_10_SLUGS = [
-  "gpt-4o",
-  "claude-3-5-sonnet",
-  "gemini-1-5-pro",
-  "gpt-4o-mini",
-  "claude-3-5-haiku",
-  "gemini-1-5-flash",
-  "deepseek-chat",
-  "llama-3-3-70b",
-  "mistral-large",
-  "qwen-2-5-72b",
+  "gpt-5-6-sol",
+  "claude-opus-4-8",
+  "gemini-3-1-pro",
+  "gpt-5-4-mini",
+  "claude-4-5-haiku",
+  "gemini-3-5-flash",
+  "deepseek-v4-pro",
+  "glm-5-2",
+  "kimi-k2-6",
+  "qwen3-7-max",
 ];
 
 /** Medium usage scenario: Code Generation (2000 in, 1500 out, 500 req/day). */
@@ -155,6 +156,12 @@ export default async function DashboardPage() {
                   <th className="hidden px-4 py-3.5 font-semibold text-gray-700 md:table-cell">
                     Provider
                   </th>
+                  <th className="hidden px-4 py-3.5 text-right font-semibold text-gray-700 lg:table-cell">
+                    Intelligence
+                  </th>
+                  <th className="hidden px-4 py-3.5 text-right font-semibold text-gray-700 lg:table-cell">
+                    Speed (t/s)
+                  </th>
                   <th className="px-4 py-3.5 text-right font-semibold text-gray-700">
                     Input $/1M
                   </th>
@@ -170,7 +177,7 @@ export default async function DashboardPage() {
                 {top10.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={7}
                       className="px-4 py-16 text-center text-gray-500"
                     >
                       No model data available. Run ingestion to populate the
@@ -185,6 +192,7 @@ export default async function DashboardPage() {
                       MEDIUM_USAGE.outputTokens,
                       MEDIUM_USAGE.requestsPerDay,
                     );
+                    const bench = benchmarkModels.find((b) => b.slug === entry.model.slug);
                     return (
                       <tr
                         key={entry.model.id}
@@ -203,6 +211,16 @@ export default async function DashboardPage() {
                         <td className="hidden px-4 py-3 text-gray-600 md:table-cell">
                           {entry.provider?.name ?? "—"}
                         </td>
+                        <td className="hidden px-4 py-3 text-right font-mono lg:table-cell">
+                          <span className={`font-semibold ${intelligenceColor(bench?.intelligenceIndex ?? null)}`}>
+                            {bench?.intelligenceIndex ?? "—"}
+                          </span>
+                        </td>
+                        <td className="hidden px-4 py-3 text-right font-mono lg:table-cell">
+                          <span className={speedColor(bench?.outputSpeed ?? null)}>
+                            {bench?.outputSpeed ?? "—"}
+                          </span>
+                        </td>
                         <td className="px-4 py-3 text-right font-mono text-gray-600">
                           {entry.currentPricing
                             ? formatPrice(entry.currentPricing.inputPricePerMillion)
@@ -218,7 +236,7 @@ export default async function DashboardPage() {
                             className={`inline-block rounded-md px-2.5 py-1 font-mono text-sm font-semibold tabular-nums ${costColorClass(monthly)}`}
                           >
                             {entry.currentPricing
-                              ? formatCost(monthly)
+                              ? formatPrice(monthly)
                               : "—"}
                           </span>
                         </td>
@@ -361,7 +379,7 @@ export default async function DashboardPage() {
                             <span
                               className={`inline-block rounded-md px-2.5 py-1 font-mono text-sm font-semibold tabular-nums ${costColorClass(monthly)}`}
                             >
-                              {formatCost(monthly)}
+                              {formatPrice(monthly)}
                             </span>
                           </td>
                         );
