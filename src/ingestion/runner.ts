@@ -156,6 +156,16 @@ async function upsertModel(
   summary: IngestionSummary,
 ): Promise<void> {
   const providerId = providerIdMap.get(normModel.providerSlug);
+
+  // Skip OpenRouter's own routing/meta models (Fusion, Auto Router, etc.)
+  // These are not actual LLMs — they're router endpoints that select from other models
+  if (normModel.providerSlug === "openrouter") {
+    summary.errors.push(
+      `Skipping OpenRouter routing model: ${normModel.openrouterModelId}`,
+    );
+    return;
+  }
+
   if (!providerId) {
     summary.errors.push(
       `No provider ID found for slug "${normModel.providerSlug}" (model: ${normModel.openrouterModelId})`,
