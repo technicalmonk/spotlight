@@ -24,7 +24,7 @@ interface ComparisonModel {
     supportsBatch: boolean;
   };
   provider: { name: string } | null;
-  pricing: {
+  currentPricing: {
     inputPricePerMillion: string;
     outputPricePerMillion: string;
     batchInputPricePerMillion: string | null;
@@ -76,19 +76,19 @@ export default function CompareClient() {
     setModelSlugs(group.models.join(","));
   };
 
-  const validModels = comparisonData.filter((m) => m.model && m.pricing);
+  const validModels = comparisonData.filter((m) => m.model && m.currentPricing);
 
   const costCalculations = validModels.map((m) => {
     const calc = calculateCost(
       {
-        inputPricePerMillion: parseFloat(m.pricing!.inputPricePerMillion),
-        outputPricePerMillion: parseFloat(m.pricing!.outputPricePerMillion),
+        inputPricePerMillion: parseFloat(m.currentPricing!.inputPricePerMillion),
+        outputPricePerMillion: parseFloat(m.currentPricing!.outputPricePerMillion),
       },
       parseInt(inputTokens, 10) || 0,
       parseInt(outputTokens, 10) || 0,
       parseInt(requestsPerDay, 10) || 0,
     );
-    return { name: m.model.name, slug: m.model.slug, monthly: calc.monthly, inputPrice: parseFloat(m.pricing!.inputPricePerMillion), outputPrice: parseFloat(m.pricing!.outputPricePerMillion) };
+    return { name: m.model.name, slug: m.model.slug, monthly: calc.monthly, inputPrice: parseFloat(m.currentPricing!.inputPricePerMillion), outputPrice: parseFloat(m.currentPricing!.outputPricePerMillion) };
   });
 
   const bestValue = costCalculations.length > 0
@@ -244,8 +244,8 @@ export default function CompareClient() {
                 <PriceChart
                   models={validModels.map((m) => ({
                     name: m.model.name,
-                    inputPrice: parseFloat(m.pricing!.inputPricePerMillion),
-                    outputPrice: parseFloat(m.pricing!.outputPricePerMillion),
+                    inputPrice: parseFloat(m.currentPricing!.inputPricePerMillion),
+                    outputPrice: parseFloat(m.currentPricing!.outputPricePerMillion),
                   }))}
                 />
               </CardContent>

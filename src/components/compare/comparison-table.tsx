@@ -13,7 +13,7 @@ interface ComparisonModel {
     supportsBatch: boolean;
   };
   provider: { name: string } | null;
-  pricing: {
+  currentPricing: {
     inputPricePerMillion: string;
     outputPricePerMillion: string;
     batchInputPricePerMillion: string | null;
@@ -61,19 +61,19 @@ export function ComparisonTable({ models }: ComparisonTableProps) {
     },
     {
       label: "Input $/1M",
-      render: (m) => <span className="font-mono text-sm">{m.pricing ? formatPrice(parseFloat(m.pricing.inputPricePerMillion)) : "N/A"}</span>,
+      render: (m) => <span className="font-mono text-sm">{m.currentPricing ? formatPrice(parseFloat(m.currentPricing.inputPricePerMillion)) : "N/A"}</span>,
     },
     {
       label: "Output $/1M",
-      render: (m) => <span className="font-mono text-sm">{m.pricing ? formatPrice(parseFloat(m.pricing.outputPricePerMillion)) : "N/A"}</span>,
+      render: (m) => <span className="font-mono text-sm">{m.currentPricing ? formatPrice(parseFloat(m.currentPricing.outputPricePerMillion)) : "N/A"}</span>,
     },
     {
       label: "Batch Input $/1M",
-      render: (m) => <span className="font-mono text-sm text-gray-500">{m.pricing?.batchInputPricePerMillion ? formatPrice(parseFloat(m.pricing.batchInputPricePerMillion)) : "N/A"}</span>,
+      render: (m) => <span className="font-mono text-sm text-gray-500">{m.currentPricing?.batchInputPricePerMillion ? formatPrice(parseFloat(m.currentPricing.batchInputPricePerMillion)) : "N/A"}</span>,
     },
     {
       label: "Batch Output $/1M",
-      render: (m) => <span className="font-mono text-sm text-gray-500">{m.pricing?.batchOutputPricePerMillion ? formatPrice(parseFloat(m.pricing.batchOutputPricePerMillion)) : "N/A"}</span>,
+      render: (m) => <span className="font-mono text-sm text-gray-500">{m.currentPricing?.batchOutputPricePerMillion ? formatPrice(parseFloat(m.currentPricing.batchOutputPricePerMillion)) : "N/A"}</span>,
     },
   ];
 
