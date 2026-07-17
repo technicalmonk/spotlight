@@ -48,11 +48,17 @@ export default function CompareClient() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- loading state before async fetch
     setLoading(true);
     fetch(`/api/compare?models=${slugs.join(",")}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (!cancelled) setComparisonData(data.models);
+      .then((r) => {
+        if (!r.ok) throw new Error(`API returned ${r.status}`);
+        return r.json();
       })
-      .catch(console.error)
+      .then((data) => {
+        if (!cancelled) setComparisonData(data.models ?? []);
+      })
+      .catch((err) => {
+        console.error("Compare fetch failed:", err);
+        if (!cancelled) setComparisonData([]);
+      })
       .finally(() => { if (!cancelled) setLoading(false); });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- slugs derives from modelSlugs
     return () => { cancelled = true; };

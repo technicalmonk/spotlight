@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ models: [] });
     }
 
-    if (slugs.length > 5) {
-      return NextResponse.json({ error: "Maximum 5 models can be compared" }, { status: 400 });
+    if (slugs.length > 8) {
+      return NextResponse.json({ error: "Maximum 8 models can be compared" }, { status: 400 });
     }
 
     const data = await getComparisonData(slugs);

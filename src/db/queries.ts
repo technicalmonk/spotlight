@@ -1,4 +1,4 @@
-import { eq, and, desc, sql, ilike, gte, lte, asc, or } from "drizzle-orm";
+import { eq, and, desc, sql, ilike, gte, lte, asc, or, inArray } from "drizzle-orm";
 import { db } from "@/db/client";
 import {
   models,
@@ -207,7 +207,7 @@ export async function getComparisonData(slugs: string[]): Promise<ComparisonData
         eq(pricingTiers.isCurrent, true),
       ),
     )
-    .where(sql`${models.slug} = ANY(${slugs})`);
+    .where(inArray(models.slug, slugs));
 
   return {
     models: rows.map((row) => ({
