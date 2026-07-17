@@ -403,30 +403,21 @@ export async function getModels(
   if (filters.modality) modelFilters.modality = filters.modality;
   if (filters.search) modelFilters.search = filters.search;
 
-  const [allModels, totalCount] = await Promise.all([
-    getFilteredModels(modelFilters, sortField, direction),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(models)
-      .innerJoin(providers, eq(models.providerId, providers.id))
-      .leftJoin(
-        pricingTiers,
-        and(
-          eq(pricingTiers.modelId, models.id),
-          eq(pricingTiers.isCurrent, true),
-        ),
-      )
-      .where(eq(models.isActive, true)),
-  ]);
+  // getFilteredModels already applies all filters + sort, returns the full
+  // filtered set. We paginate from that — no need for a separate count query
+  // (which would need to replicate all the same WHERE conditions).
+  const allModels = await getFilteredModels(modelFilters, sortField, direction);
 
-  const total = totalCount[0]?.count ?? allModels.length;
-  const start = (page - 1) * pageSize;
+  const total = allModels.length;
+  // Clamp page to valid range (e.g. if search returns fewer pages than current)
+  const clampedPage = Math.min(page, Math.max(1, Math.ceil(total / pageSize)));
+  const start = (clampedPage - 1) * pageSize;
   const paged = allModels.slice(start, start + pageSize);
 
   return {
     models: paged,
     total,
-    page,
+    page: clampedPage,
     pageSize,
     totalPages: Math.ceil(total / pageSize),
   };

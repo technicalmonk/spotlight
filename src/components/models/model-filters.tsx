@@ -25,6 +25,7 @@ export function ModelFilters({ providers }: ModelFiltersProps) {
     parseAsString.withDefault("name-asc"),
   );
   const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
+  const [, setPage] = useQueryState("page", parseAsString.withDefault("1"));
   const [, startTransition] = useTransition();
 
   // Local state for instant input feedback, synced to URL with debounce
@@ -44,6 +45,7 @@ export function ModelFilters({ providers }: ModelFiltersProps) {
     const timer = setTimeout(() => {
       startTransition(() => {
         setSearch(value || null);
+        setPage(null); // reset to page 1 when search changes
       });
     }, 300);
 
@@ -53,18 +55,21 @@ export function ModelFilters({ providers }: ModelFiltersProps) {
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     startTransition(() => {
       setProvider(e.target.value === "all" ? null : e.target.value);
+      setPage(null); // reset to page 1
     });
   };
 
   const handleModalityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     startTransition(() => {
       setModality(e.target.value === "all" ? null : e.target.value);
+      setPage(null); // reset to page 1
     });
   };
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     startTransition(() => {
       setSort(e.target.value);
+      setPage(null); // reset to page 1
     });
   };
 
@@ -75,6 +80,7 @@ export function ModelFilters({ providers }: ModelFiltersProps) {
       setSort(null);
       setSearch(null);
       setSearchInput("");
+      setPage(null);
     });
   };
 
