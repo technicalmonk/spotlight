@@ -13,11 +13,11 @@ export const dynamic = "force-dynamic";
 
 /** Top 10 most popular models by user base — uses latest 2026 model names. */
 const TOP_10_SLUGS = [
+  "kimi-k3",
   "gpt-5-6-sol",
   "claude-opus-4-8",
   "gemini-3-1-pro",
   "gpt-5-4-mini",
-  "claude-4-5-haiku",
   "gemini-3-5-flash",
   "deepseek-v4-pro",
   "glm-5-2",

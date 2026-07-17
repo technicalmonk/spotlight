@@ -57,17 +57,19 @@ export const benchmarkModels: BenchmarkModel[] = [
   { label: "DeepSeek V4 Flash", provider: "DeepSeek", slug: "deepseek-v4-flash", inputPricePerMillion: 0.06, outputPricePerMillion: 0.12, inWorkBench: true, intelligenceIndex: 40, codingIndex: null, agenticIndex: null, outputSpeed: 109, latency: 1.17, contextWindow: "1M", isReasoning: true, isOpenWeights: true, releaseDate: "2026-06-01" },
   { label: "MiniMax-M3", provider: "MiniMax", slug: "minimax-m3", inputPricePerMillion: 0.22, outputPricePerMillion: 0.22, inWorkBench: true, intelligenceIndex: 44, codingIndex: null, agenticIndex: null, outputSpeed: 86, latency: 2.06, contextWindow: "1M", isReasoning: true, isOpenWeights: true, releaseDate: "2026-05-01" },
   { label: "Kimi K2.6", provider: "Moonshot", slug: "kimi-k2-6", inputPricePerMillion: 0.70, outputPricePerMillion: 2.80, inWorkBench: true, intelligenceIndex: 44, codingIndex: null, agenticIndex: null, outputSpeed: 44, latency: 2.56, contextWindow: "256K", isReasoning: true, isOpenWeights: true, releaseDate: "2026-06-01" },
+  { label: "Kimi K3", provider: "Moonshot", slug: "kimi-k3", inputPricePerMillion: 3, outputPricePerMillion: 15, inWorkBench: true, intelligenceIndex: 57, codingIndex: null, agenticIndex: null, outputSpeed: 62, latency: null, contextWindow: "1M", isReasoning: true, isOpenWeights: false, releaseDate: "2026-07-16" },
   { label: "Qwen3.7 Max", provider: "Alibaba", slug: "qwen3-7-max", inputPricePerMillion: 1.43, outputPricePerMillion: 5.72, inWorkBench: true, intelligenceIndex: 46, codingIndex: null, agenticIndex: null, outputSpeed: 200, latency: 2.45, contextWindow: "1M", isReasoning: true, isOpenWeights: true, releaseDate: "2026-06-01" },
   { label: "Llama 4 Maverick", provider: "Meta", slug: "llama-4-maverick", inputPricePerMillion: 0.34, outputPricePerMillion: 0.34, inWorkBench: true, intelligenceIndex: 14, codingIndex: null, agenticIndex: null, outputSpeed: 107, latency: 1.00, contextWindow: "1M", isReasoning: false, isOpenWeights: true, releaseDate: "2026-04-01" },
 ];
 
 // Top 5 frontier models by user base (for "no current scenario" mode)
+// Kimi K3 is #4 on Artificial Analysis Intelligence Index — leading model
 export const topFrontierSlugs = [
+  "kimi-k3",
   "gpt-5-6-sol",
   "claude-opus-4-8",
   "gemini-3-1-pro",
   "gpt-5-4-mini",
-  "claude-4-5-haiku",
 ];
 
 // Provider group presets for compare page
@@ -107,8 +109,8 @@ export const providerGroups = [
   {
     name: "Open Source",
     slug: "opensource",
-    description: "GLM-5.2, DeepSeek V4, Qwen3.7, Kimi K2.6 — self-hostable",
-    models: ["glm-5-2", "deepseek-v4-pro", "deepseek-v4-flash", "qwen3-7-max", "kimi-k2-6"],
+    description: "GLM-5.2, DeepSeek V4, Qwen3.7, Kimi K3 — self-hostable, cheapest at scale",
+    models: ["glm-5-2", "deepseek-v4-pro", "deepseek-v4-flash", "qwen3-7-max", "kimi-k2-6", "kimi-k3"],
     icon: "OS",
     accent: "bg-spotlight-50 text-spotlight-700 border-spotlight-300",
   },
