@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryState, parseAsString } from "nuqs";
-import { useTransition } from "react";
+import { useTransition, useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { SearchIcon, X } from "lucide-react";
@@ -14,24 +14,40 @@ interface ModelFiltersProps {
 export function ModelFilters({ providers }: ModelFiltersProps) {
   const [provider, setProvider] = useQueryState(
     "provider",
-    parseAsString.withDefault("all")
+    parseAsString.withDefault("all"),
   );
   const [modality, setModality] = useQueryState(
     "modality",
-    parseAsString.withDefault("all")
+    parseAsString.withDefault("all"),
   );
   const [sort, setSort] = useQueryState(
     "sort",
-    parseAsString.withDefault("name-asc")
+    parseAsString.withDefault("name-asc"),
   );
   const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
   const [, startTransition] = useTransition();
 
+  // Local state for instant input feedback, synced to URL with debounce
+  const [searchInput, setSearchInput] = useState(search);
+
+  // Sync local input when URL changes (e.g. clear filters)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing local input from URL state
+    setSearchInput(search);
+  }, [search]);
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    startTransition(() => {
-      setSearch(value || null);
-    });
+    setSearchInput(value); // instant local update for responsive typing
+
+    // Debounce URL update to avoid excessive server re-renders
+    const timer = setTimeout(() => {
+      startTransition(() => {
+        setSearch(value || null);
+      });
+    }, 300);
+
+    return () => clearTimeout(timer);
   };
 
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -58,6 +74,7 @@ export function ModelFilters({ providers }: ModelFiltersProps) {
       setModality(null);
       setSort(null);
       setSearch(null);
+      setSearchInput("");
     });
   };
 
@@ -73,17 +90,18 @@ export function ModelFilters({ providers }: ModelFiltersProps) {
           <Input
             type="text"
             placeholder="Search models..."
-            value={search}
+            value={searchInput}
             onChange={handleSearchChange}
             className="pl-9"
           />
-          {search && (
+          {searchInput && (
             <button
               onClick={() => {
-              startTransition(() => {
-                setSearch(null);
-              });
-            }}
+                setSearchInput("");
+                startTransition(() => {
+                  setSearch(null);
+                });
+              }}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               <X className="h-4 w-4" />
