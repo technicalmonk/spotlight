@@ -6,15 +6,7 @@ export function Footer() {
           {/* Logo + tagline */}
           <div className="flex flex-col items-center gap-2 sm:items-start">
             <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-ink-900">
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none">
-                  <path
-                    d="M12 2 L14 8 L20 8 L15 12 L17 18 L12 14 L7 18 L9 12 L4 8 L10 8 Z"
-                    fill="#ffd60a"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
+              <img src="/xilos-logo-blue.svg" alt="Xilos" className="h-6 w-auto" />
               <span className="text-base font-bold tracking-tight text-ink-900">
                 Xilos Spotlight
               </span>

@@ -25,18 +25,7 @@ export function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="relative">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink-900">
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-                <path
-                  d="M12 2 L14 8 L20 8 L15 12 L17 18 L12 14 L7 18 L9 12 L4 8 L10 8 Z"
-                  fill="#ffd60a"
-                  stroke="#ffd60a"
-                  strokeWidth="0.5"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-            <div className="absolute inset-0 -z-10 rounded-lg bg-spotlight-400/30 blur-md transition-opacity group-hover:bg-spotlight-400/50" />
+            <img src="/xilos-logo-blue.svg" alt="Xilos" className="h-7 w-auto" />
           </div>
           <span className="text-lg font-bold tracking-tight">
             <span className="text-gray-400">Xilos</span> <span className="text-ink-900">Spotlight</span>
