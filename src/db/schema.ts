@@ -254,6 +254,42 @@ export const leadCaptures = pgTable(
 );
 
 // ---------------------------------------------------------------------------
+// Model Benchmarks — intelligence scores from our own test suite
+// ---------------------------------------------------------------------------
+
+export const modelBenchmarks = pgTable(
+  "model_benchmarks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    modelId: uuid("model_id")
+      .notNull()
+      .references(() => models.id, { onDelete: "cascade" }),
+    modelSlug: text("model_slug").notNull(),
+    modelName: text("model_name").notNull(),
+    providerName: text("provider_name").notNull(),
+    // Overall intelligence score 0-100
+    intelligenceScore: integer("intelligence_score").notNull(),
+    // Sub-scores
+    reasoningScore: integer("reasoning_score"),
+    codingScore: integer("coding_score"),
+    mathScore: integer("math_score"),
+    knowledgeScore: integer("knowledge_score"),
+    // Metadata
+    testVersion: text("test_version").notNull().default("v1"),
+    openrouterModelId: text("openrouter_model_id"),
+    benchmarkedAt: timestamp("benchmarked_at", { withTimezone: true }).defaultNow().notNull(),
+    postedToX: boolean("posted_to_x").default(false).notNull(),
+    xPostId: text("x_post_id"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("model_benchmarks_model_slug_idx").on(table.modelSlug),
+    index("model_benchmarks_score_idx").on(table.intelligenceScore),
+    index("model_benchmarks_posted_idx").on(table.postedToX),
+  ],
+);
+
+// ---------------------------------------------------------------------------
 // Inferred Types (for use throughout the app)
 // ---------------------------------------------------------------------------
 
@@ -263,6 +299,7 @@ export type PricingTier = typeof pricingTiers.$inferSelect;
 export type PriceChangeLog = typeof priceChangeLogs.$inferSelect;
 export type UsageScenario = typeof usageScenarios.$inferSelect;
 export type LeadCapture = typeof leadCaptures.$inferSelect;
+export type ModelBenchmark = typeof modelBenchmarks.$inferSelect;
 
 export type NewProvider = typeof providers.$inferInsert;
 export type NewModel = typeof models.$inferInsert;
@@ -270,3 +307,4 @@ export type NewPricingTier = typeof pricingTiers.$inferInsert;
 export type NewPriceChangeLog = typeof priceChangeLogs.$inferInsert;
 export type NewUsageScenario = typeof usageScenarios.$inferInsert;
 export type NewLeadCapture = typeof leadCaptures.$inferInsert;
+export type NewModelBenchmark = typeof modelBenchmarks.$inferInsert;

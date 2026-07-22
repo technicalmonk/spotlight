@@ -11,15 +11,29 @@ interface ModelTableProps {
   globalRankMap?: Map<string, number>;
   currentSort?: string;
   basePath?: string;
+  benchmarkMap?: Map<string, {
+    intelligenceScore: number;
+    reasoningScore: number | null;
+    codingScore: number | null;
+    mathScore: number | null;
+    knowledgeScore: number | null;
+  }>;
 }
 
-export function ModelTable({ models, globalRankMap, currentSort = "name-desc", basePath = "/models" }: ModelTableProps) {
+export function ModelTable({ models, globalRankMap, currentSort = "name-desc", basePath = "/models", benchmarkMap }: ModelTableProps) {
   const [activeField, activeDir] = currentSort.split("-");
 
   // Build a lookup map: slug -> intelligenceIndex
+  // Prefer DB benchmark scores, fall back to benchmarks file
   const intelMap = new Map<string, number | null>();
   for (const b of benchmarkModels) {
     intelMap.set(b.slug, b.intelligenceIndex);
+  }
+  // Override with DB benchmark scores if available
+  if (benchmarkMap) {
+    for (const [slug, scores] of benchmarkMap.entries()) {
+      intelMap.set(slug, scores.intelligenceScore);
+    }
   }
 
   function sortUrl(field: string): string {

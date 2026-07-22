@@ -2,6 +2,7 @@ import { ModelTable } from "@/components/models/model-table";
 import { ModelFilters } from "@/components/models/model-filters";
 import { ModelCard } from "@/components/models/model-card";
 import { getModels, getProviders, getAllModels } from "@/db/queries";
+import { getBenchmarkMap } from "@/lib/benchmark-runner";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +27,7 @@ export default async function ModelsPage({ searchParams }: ModelsPageProps) {
   const page = params.page ? parseInt(params.page) : 1;
   const sort = params.sort ?? "name-desc";
 
-  const [result, providers, allModels] = await Promise.all([
+  const [result, providers, allModels, benchmarkMap] = await Promise.all([
     getModels({
       provider: params.provider,
       modality: params.modality,
@@ -43,6 +44,7 @@ export default async function ModelsPage({ searchParams }: ModelsPageProps) {
     })),
     getProviders().catch(() => []),
     getAllModels().catch(() => []),
+    getBenchmarkMap().catch(() => new Map()),
   ]);
 
   // Compute global cost rank across ALL models (not just current page)
@@ -73,7 +75,7 @@ export default async function ModelsPage({ searchParams }: ModelsPageProps) {
 
       {/* Desktop: table */}
       <div className="hidden sm:block">
-        <ModelTable models={result.models} globalRankMap={globalRankMap} currentSort={sort} />
+        <ModelTable models={result.models} globalRankMap={globalRankMap} currentSort={sort} benchmarkMap={benchmarkMap} />
       </div>
 
       {/* Mobile: cards */}
