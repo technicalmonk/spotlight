@@ -11,7 +11,7 @@ const navLinks = [
   { href: "/calculator", label: "Calculator" },
   { href: "/optimizer", label: "Optimizer" },
   { href: "/compare", label: "Compare" },
-  { href: "/dashboard", label: "Dashboard" },
+  { href: "/cost-analysis", label: "Cost Analysis" },
   { href: "/scenarios", label: "Scenarios" },
 ];
 
