@@ -8,28 +8,34 @@ import { formatPrice } from "@/lib/utils";
 
 interface ModelTableProps {
   models: ModelWithPricing[];
+  globalRankMap?: Map<string, number>;
 }
 
 type SortField = "name" | "provider" | "allIn" | "rank" | "context";
 type SortDir = "asc" | "desc";
 
-export function ModelTable({ models }: ModelTableProps) {
+export function ModelTable({ models, globalRankMap }: ModelTableProps) {
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
-  // Calculate "all-in" cost and rank
+  // Use global rank from server (across ALL models), fallback to local computation
   const withCost = useMemo(() => {
     const items = models.map((entry) => {
       const input = Number(entry.currentPricing?.inputPricePerMillion ?? 0);
       const output = Number(entry.currentPricing?.outputPricePerMillion ?? 0);
       const allIn = input + output;
-      return { entry, allIn, input, output };
+      const rank = globalRankMap?.get(entry.model.id) ?? 0;
+      return { entry, allIn, input, output, rank };
     });
-    const sorted = [...items].sort((a, b) => a.allIn - b.allIn);
-    const rankMap = new Map<string, number>();
-    sorted.forEach((item, i) => rankMap.set(item.entry.model.id, i + 1));
-    return items.map((item) => ({ ...item, rank: rankMap.get(item.entry.model.id) ?? 0 }));
-  }, [models]);
+    // If no global rank map, compute locally as fallback
+    if (!globalRankMap) {
+      const sorted = [...items].sort((a, b) => a.allIn - b.allIn);
+      const rankMap = new Map<string, number>();
+      sorted.forEach((item, i) => rankMap.set(item.entry.model.id, i + 1));
+      return items.map((item) => ({ ...item, rank: rankMap.get(item.entry.model.id) ?? 0 }));
+    }
+    return items;
+  }, [models, globalRankMap]);
 
   // Apply sorting
   const sorted = useMemo(() => {

@@ -1,7 +1,7 @@
 import { ModelTable } from "@/components/models/model-table";
 import { ModelFilters } from "@/components/models/model-filters";
 import { ModelCard } from "@/components/models/model-card";
-import { getModels, getProviders } from "@/db/queries";
+import { getModels, getProviders, getAllModels } from "@/db/queries";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +26,7 @@ export default async function ModelsPage({ searchParams }: ModelsPageProps) {
   const page = params.page ? parseInt(params.page) : 1;
   const sort = params.sort ?? "name-asc";
 
-  const [result, providers] = await Promise.all([
+  const [result, providers, allModels] = await Promise.all([
     getModels({
       provider: params.provider,
       modality: params.modality,
@@ -42,7 +42,19 @@ export default async function ModelsPage({ searchParams }: ModelsPageProps) {
       totalPages: 0,
     })),
     getProviders().catch(() => []),
+    getAllModels().catch(() => []),
   ]);
+
+  // Compute global cost rank across ALL models (not just current page)
+  const globalRankMap = new Map<string, number>();
+  const sortedByCost = [...allModels]
+    .map((m) => {
+      const input = Number(m.currentPricing?.inputPricePerMillion ?? 0);
+      const output = Number(m.currentPricing?.outputPricePerMillion ?? 0);
+      return { id: m.model.id, allIn: input + output };
+    })
+    .sort((a, b) => a.allIn - b.allIn);
+  sortedByCost.forEach((item, i) => globalRankMap.set(item.id, i + 1));
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -61,7 +73,7 @@ export default async function ModelsPage({ searchParams }: ModelsPageProps) {
 
       {/* Desktop: table */}
       <div className="hidden sm:block">
-        <ModelTable models={result.models} />
+        <ModelTable models={result.models} globalRankMap={globalRankMap} />
       </div>
 
       {/* Mobile: cards */}
