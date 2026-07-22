@@ -24,12 +24,8 @@ export function Header() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="relative">
-            <img src="/xilos-logo-blue.svg" alt="Xilos" className="h-7 w-auto" />
-          </div>
-          <span className="text-lg font-bold tracking-tight">
-            <span className="text-gray-400">Xilos</span> <span className="text-ink-900">Spotlight</span>
-          </span>
+          <img src="/xilos-logo-blue.svg" alt="Xilos" className="h-7 w-auto" />
+          <span className="text-lg font-bold tracking-tight text-ink-900">Spotlight</span>
         </Link>
 
         {/* Desktop Nav */}

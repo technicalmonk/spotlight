@@ -9,12 +9,13 @@ interface HeroProps {
 export function Hero({ totalModels }: HeroProps) {
   return (
     <section className="relative overflow-hidden border-b border-gray-200 bg-white">
+      {/* Subtle grid background */}
       <div className="spotlight-grid spotlight-grid-fade pointer-events-none absolute inset-0" aria-hidden="true" />
 
-      <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-        <div className="mx-auto max-w-3xl text-center">
+      <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+        <div className="mx-auto max-w-2xl text-center">
           {/* Badge */}
-          <div className="animate-fade-in-up mb-4 inline-flex items-center gap-2 rounded-full border border-spotlight-300 bg-spotlight-50 px-3 py-1 text-xs font-medium text-spotlight-700">
+          <div className="animate-fade-in-up mb-3 inline-flex items-center gap-2 rounded-full border border-spotlight-300 bg-spotlight-50 px-3 py-1 text-xs font-medium text-spotlight-700">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-spotlight-400 opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-spotlight-500" />
@@ -29,11 +30,11 @@ export function Hero({ totalModels }: HeroProps) {
             will cost
           </h1>
 
-          <p className="animate-fade-in-up mt-4 text-base text-gray-600 sm:text-lg" style={{ animationDelay: "0.1s" }}>
+          <p className="animate-fade-in-up mt-3 text-base text-gray-600 sm:text-lg" style={{ animationDelay: "0.1s" }}>
             Compare LLM pricing across {totalModels}+ models. Real-time costs, accurate estimates, zero guesswork.
           </p>
 
-          {/* CTAs */}
+          {/* Primary CTAs */}
           <div className="animate-fade-in-up mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row" style={{ animationDelay: "0.15s" }}>
             <Link href="/models">
               <Button size="lg" className="w-full sm:w-auto">
@@ -49,13 +50,12 @@ export function Hero({ totalModels }: HeroProps) {
             </Link>
           </div>
 
-          {/* "Already using?" link */}
-          <p className="animate-fade-in-up mt-4 text-sm text-gray-400" style={{ animationDelay: "0.2s" }}>
-            Already using a model?{" "}
+          {/* Secondary links */}
+          <div className="animate-fade-in-up mt-4 flex items-center justify-center gap-4 text-sm text-gray-400" style={{ animationDelay: "0.2s" }}>
             <Link href="/optimizer" className="font-medium text-brand-600 hover:text-brand-700">
-              See if you could save →
+              Already using a model? See if you could save →
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     </section>

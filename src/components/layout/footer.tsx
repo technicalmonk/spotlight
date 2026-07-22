@@ -8,7 +8,7 @@ export function Footer() {
             <div className="flex items-center gap-2">
               <img src="/xilos-logo-blue.svg" alt="Xilos" className="h-6 w-auto" />
               <span className="text-base font-bold tracking-tight text-ink-900">
-                Xilos Spotlight
+                Spotlight
               </span>
             </div>
             <p className="text-sm text-gray-500">
