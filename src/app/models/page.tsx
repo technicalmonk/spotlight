@@ -24,7 +24,7 @@ interface ModelsPageProps {
 export default async function ModelsPage({ searchParams }: ModelsPageProps) {
   const params = await searchParams;
   const page = params.page ? parseInt(params.page) : 1;
-  const sort = params.sort ?? "name-asc";
+  const sort = params.sort ?? "name-desc";
 
   const [result, providers, allModels] = await Promise.all([
     getModels({
@@ -73,7 +73,7 @@ export default async function ModelsPage({ searchParams }: ModelsPageProps) {
 
       {/* Desktop: table */}
       <div className="hidden sm:block">
-        <ModelTable models={result.models} globalRankMap={globalRankMap} />
+        <ModelTable models={result.models} globalRankMap={globalRankMap} currentSort={sort} />
       </div>
 
       {/* Mobile: cards */}

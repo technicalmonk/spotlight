@@ -124,14 +124,24 @@ export async function getFilteredModels(
         eq(pricingTiers.isCurrent, true),
       ),
     )
-    .where(and(...conditions))
-    .orderBy(orderFn(sortColumn));
+    .where(and(...conditions));
 
-  return rows.map((row) => ({
+  let result = rows.map((row) => ({
     model: row.model,
     provider: row.provider,
     currentPricing: row.currentPricing ?? null,
   }));
+
+  // Post-query sort for allInCost (computed: input + output price)
+  if (sort === "allInCost") {
+    result.sort((a, b) => {
+      const aCost = Number(a.currentPricing?.inputPricePerMillion ?? 0) + Number(a.currentPricing?.outputPricePerMillion ?? 0);
+      const bCost = Number(b.currentPricing?.inputPricePerMillion ?? 0) + Number(b.currentPricing?.outputPricePerMillion ?? 0);
+      return direction === "asc" ? aCost - bCost : bCost - aCost;
+    });
+  }
+
+  return result;
 }
 
 function getSortColumn(sort: SortField) {
@@ -144,6 +154,9 @@ function getSortColumn(sort: SortField) {
       return models.contextWindow;
     case "provider":
       return providers.name;
+    case "allInCost":
+      // allInCost is computed post-query (input + output), sort there
+      return models.name; // placeholder, actual sort happens in getFilteredModels
     case "name":
     default:
       return models.name;
@@ -393,6 +406,8 @@ export async function getModels(
       output: "outputPrice",
       context: "contextWindow",
       provider: "provider",
+      allIn: "allInCost",
+      rank: "allInCost", // rank is just allInCost ascending
     };
     sortField = fieldMap[parts[0]] ?? "name";
     direction = parts[1] === "desc" ? "desc" : "asc";
