@@ -137,7 +137,8 @@ export type SortField =
   | "inputPrice"
   | "outputPrice"
   | "contextWindow"
-  | "allInCost";
+  | "allInCost"
+  | "intelligence";
 
 export type SortDirection = "asc" | "desc";
 

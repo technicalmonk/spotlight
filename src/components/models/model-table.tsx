@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowUp, ArrowDown, ArrowUpDown, Info } from "lucide-react";
 import type { ModelWithPricing } from "@/lib/types";
 import { formatPrice } from "@/lib/utils";
+import { benchmarkModels, intelligenceColor } from "@/lib/benchmarks";
 
 interface ModelTableProps {
   models: ModelWithPricing[];
@@ -12,19 +13,20 @@ interface ModelTableProps {
   basePath?: string;
 }
 
-type SortField = "name" | "provider" | "rank" | "allIn" | "context";
-
 export function ModelTable({ models, globalRankMap, currentSort = "name-desc", basePath = "/models" }: ModelTableProps) {
-  // Parse current sort from URL param
   const [activeField, activeDir] = currentSort.split("-");
+
+  // Build a lookup map: slug -> intelligenceIndex
+  const intelMap = new Map<string, number | null>();
+  for (const b of benchmarkModels) {
+    intelMap.set(b.slug, b.intelligenceIndex);
+  }
 
   function sortUrl(field: string): string {
     let dir: string;
     if (activeField === field) {
-      // Toggle: asc -> desc -> asc
       dir = activeDir === "asc" ? "desc" : "asc";
     } else {
-      // Default: name desc, everything else asc
       dir = field === "name" ? "desc" : "asc";
     }
     return `${basePath}?sort=${field}-${dir}`;
@@ -38,7 +40,7 @@ export function ModelTable({ models, globalRankMap, currentSort = "name-desc", b
   const headers: { field: string; className: string; render: () => React.ReactNode }[] = [
     { field: "name", className: "px-4 py-3.5 text-left font-semibold text-gray-700", render: () => "Name" },
     { field: "provider", className: "hidden px-4 py-3.5 text-left font-semibold text-gray-700 md:table-cell", render: () => "Provider" },
-    { field: "rank", className: "px-4 py-3.5 text-center font-semibold text-gray-700", render: () => <><span className="hidden sm:inline">Cost Rank</span><span className="sm:hidden">#</span></> },
+    { field: "intelligence", className: "px-4 py-3.5 text-center font-semibold text-gray-700", render: () => <><span className="hidden sm:inline">Intelligence</span><span className="sm:hidden">Int</span></> },
     { field: "allIn", className: "px-4 py-3.5 text-right font-semibold text-gray-700", render: () => <><span className="hidden sm:inline">All-in Cost</span><span className="sm:hidden">$</span><span className="block text-[10px] font-normal text-gray-400">$/1M tokens</span></> },
     { field: "context", className: "hidden px-4 py-3.5 text-center font-semibold text-gray-700 sm:table-cell", render: () => <><span className="hidden sm:inline">Context</span><span className="sm:hidden">Ctx</span></> },
   ];
@@ -79,6 +81,7 @@ export function ModelTable({ models, globalRankMap, currentSort = "name-desc", b
                   const output = Number(entry.currentPricing?.outputPricePerMillion ?? 0);
                   const allIn = input + output;
                   const rank = globalRankMap?.get(entry.model.id) ?? 0;
+                  const intel = intelMap.get(entry.model.slug) ?? null;
                   return (
                     <tr key={entry.model.id} className="group cursor-pointer transition-colors hover:bg-brand-50/30">
                       <td className="px-4 py-3">
@@ -89,15 +92,13 @@ export function ModelTable({ models, globalRankMap, currentSort = "name-desc", b
                       </td>
                       <td className="hidden px-4 py-3 text-gray-600 md:table-cell">{entry.provider?.name ?? "—"}</td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
-                          rank <= 3 ? "bg-green-100 text-green-700" :
-                          rank <= 10 ? "bg-yellow-100 text-yellow-700" :
-                          rank <= 20 ? "bg-orange-100 text-orange-700" :
-                          rank <= 50 ? "bg-blue-100 text-blue-700" :
-                          "bg-gray-100 text-gray-500"
-                        }`}>
-                          {rank || "—"}
-                        </span>
+                        {intel !== null ? (
+                          <span className={`inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-xs font-bold ${intelligenceColor(intel)}`}>
+                            {intel}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-300">N/A</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span className="rounded-md bg-spotlight-50 px-2 py-0.5 font-mono text-sm font-medium tabular-nums text-ink-900">
@@ -106,6 +107,9 @@ export function ModelTable({ models, globalRankMap, currentSort = "name-desc", b
                         <span className="block text-[10px] text-gray-400">
                           {entry.currentPricing ? `In ${formatPrice(entry.currentPricing.inputPricePerMillion)} · Out ${formatPrice(entry.currentPricing.outputPricePerMillion)}` : ""}
                         </span>
+                        {rank > 0 && rank <= 50 && (
+                          <span className="block text-[10px] text-gray-400">Rank #{rank}</span>
+                        )}
                       </td>
                       <td className="hidden px-4 py-3 font-mono text-center text-gray-600 sm:table-cell">
                         {entry.model.contextWindow >= 1000000

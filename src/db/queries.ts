@@ -141,6 +141,18 @@ export async function getFilteredModels(
     });
   }
 
+  // Post-query sort for intelligence (from benchmarks file, not DB)
+  if (sort === "intelligence") {
+    const { benchmarkModels } = require("@/lib/benchmarks");
+    const intelMap = new Map<string, number>();
+    for (const b of benchmarkModels) intelMap.set(b.slug, b.intelligenceIndex ?? 0);
+    result.sort((a, b) => {
+      const aIntel = intelMap.get(a.model.slug) ?? -1;
+      const bIntel = intelMap.get(b.model.slug) ?? -1;
+      return direction === "asc" ? aIntel - bIntel : bIntel - aIntel;
+    });
+  }
+
   return result;
 }
 
@@ -157,6 +169,9 @@ function getSortColumn(sort: SortField) {
     case "allInCost":
       // allInCost is computed post-query (input + output), sort there
       return models.name; // placeholder, actual sort happens in getFilteredModels
+    case "intelligence":
+      // intelligence comes from benchmarks file, not DB — sort post-query
+      return models.name;
     case "name":
     default:
       return models.name;
@@ -407,7 +422,8 @@ export async function getModels(
       context: "contextWindow",
       provider: "provider",
       allIn: "allInCost",
-      rank: "allInCost", // rank is just allInCost ascending
+      rank: "allInCost",
+      intelligence: "intelligence",
     };
     sortField = fieldMap[parts[0]] ?? "name";
     direction = parts[1] === "desc" ? "desc" : "asc";
