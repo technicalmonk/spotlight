@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,26 +36,41 @@ const providers = ["OpenAI", "Anthropic", "Google", "Groq", "Fireworks", "Mistra
 type Step = "intro" | "org" | "usage" | "results" | "unlocked";
 
 export default function OptimizerClient() {
+  // Load saved profile from localStorage
+  const savedProfile = typeof window !== "undefined"
+    ? JSON.parse(localStorage.getItem("xilos_optimizer_profile") || "{}")
+    : {};
+
   const [step, setStep] = useState<Step>("intro");
   const [hasScenario, setHasScenario] = useState<boolean | null>(null);
 
-  // Org info
-  const [orgSize, setOrgSize] = useState("");
-  const [industry, setIndustry] = useState("");
-  const [employeeCount, setEmployeeCount] = useState(10);
+  // Org info — pre-populate from saved profile
+  const [orgSize, setOrgSize] = useState(savedProfile.orgSize || "");
+  const [industry, setIndustry] = useState(savedProfile.industry || "");
+  const [employeeCount, setEmployeeCount] = useState(savedProfile.employeeCount || 10);
 
-  // AI usage
-  const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
-  const [selectedModelSlug, setSelectedModelSlug] = useState("");
-  const [tokensPerUserPerDay, setTokensPerUserPerDay] = useState(5000);
-  const [volume, setVolume] = useState("medium");
-  const [inputTokens, setInputTokens] = useState(2000);
-  const [outputTokens, setOutputTokens] = useState(1500);
+  // AI usage — pre-populate from saved profile
+  const [selectedProviders, setSelectedProviders] = useState<string[]>(savedProfile.selectedProviders || []);
+  const [selectedModelSlug, setSelectedModelSlug] = useState(savedProfile.selectedModelSlug || "");
+  const [tokensPerUserPerDay, setTokensPerUserPerDay] = useState(savedProfile.tokensPerUserPerDay || 5000);
+  const [volume, setVolume] = useState(savedProfile.volume || "medium");
+  const [inputTokens, setInputTokens] = useState(savedProfile.inputTokens || 2000);
+  const [outputTokens, setOutputTokens] = useState(savedProfile.outputTokens || 1500);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Lead
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(savedProfile.email || "");
   const [leadSubmitted, setLeadSubmitted] = useState(false);
+
+  // Timeframe for savings display
+  const [timeframe, setTimeframe] = useState<1 | 2 | 3>(1);
+
+  // Save profile to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const profile = { orgSize, industry, employeeCount, selectedProviders, selectedModelSlug, tokensPerUserPerDay, volume, inputTokens, outputTokens, email };
+    localStorage.setItem("xilos_optimizer_profile", JSON.stringify(profile));
+  }, [orgSize, industry, employeeCount, selectedProviders, selectedModelSlug, tokensPerUserPerDay, volume, inputTokens, outputTokens, email]);
 
   const selectedVolume = volumeLevels.find((v) => v.value === volume)!;
   const reqPerDay = Math.round(selectedVolume.reqPerDay * (employeeCount / 10));
@@ -100,7 +115,19 @@ export default function OptimizerClient() {
         inWorkBench: m.inWorkBench,
       }));
     }
-    const models = [selectedModel, ...cheaperWorkBench, ...moreExpensive].filter(Boolean) as typeof allCosts;
+    // For scenario mode: always include the selected model first with isCurrent=true
+    const models: (typeof allCosts)[number][] = [];
+    if (selectedModel) {
+      models.push({ ...selectedModel, monthly: allCosts.find(m => m.slug === selectedModel.slug)?.monthly ?? 0 });
+    }
+    // Add cheaper alternatives
+    for (const m of cheaperWorkBench) {
+      if (!models.find(x => x.slug === m.slug)) models.push(m);
+    }
+    // Add more expensive
+    for (const m of moreExpensive) {
+      if (!models.find(x => x.slug === m.slug)) models.push(m);
+    }
     return models.map((m) => ({
       name: m.label.length > 15 ? m.label.substring(0, 15) + "..." : m.label,
       cost: Math.round(m.monthly),
@@ -491,18 +518,38 @@ export default function OptimizerClient() {
           </Card>
         )}
 
-        {/* Savings callout */}
+        {/* Savings callout with timeframe selector */}
         {savings > 0 && cheapestWorkBench && (
           <Card className="mb-6 border-amber-300 bg-amber-50">
-            <CardContent className="flex items-center gap-4 p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-400">
-                <PiggyBank className="h-6 w-6 text-ink-900" />
-              </div>
-              <div className="flex-1">
-                <p className="font-bold text-ink-900">You could save {formatPrice(savings)}/month</p>
-                <p className="text-sm text-gray-600">
-                  Switching to {cheapestWorkBench.label} ({cheapestWorkBench.provider}) via Xilos WorkBench
-                </p>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-400">
+                  <PiggyBank className="h-6 w-6 text-ink-900" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-ink-900">
+                    You could save {formatPrice(savings * 12 * timeframe)} over {timeframe} year{timeframe > 1 ? "s" : ""}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Switching to {cheapestWorkBench.label} ({cheapestWorkBench.provider}) via Xilos WorkBench
+                    {" · "}{formatPrice(savings)}/month
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3].map((y) => (
+                    <button
+                      key={y}
+                      onClick={() => setTimeframe(y as 1 | 2 | 3)}
+                      className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
+                        timeframe === y
+                          ? "bg-ink-900 text-white"
+                          : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                      }`}
+                    >
+                      {y}Y
+                    </button>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
