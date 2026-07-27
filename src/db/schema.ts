@@ -344,3 +344,25 @@ export const arenaBattles = pgTable(
 
 export type ArenaBattle = typeof arenaBattles.$inferSelect;
 export type NewArenaBattle = typeof arenaBattles.$inferInsert;
+
+// ---------------------------------------------------------------------------
+// ARENA RESPONSES — cached model responses per challenge (no regeneration)
+// ---------------------------------------------------------------------------
+
+export const arenaResponses = pgTable(
+  "arena_responses",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    challengeId: text("challenge_id").notNull(),
+    modelIdentifier: text("model_identifier").notNull(), // OpenRouter model ID
+    response: text("response").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("arena_responses_challenge_model_idx").on(table.challengeId, table.modelIdentifier),
+  ],
+);
+
+export type ArenaResponse = typeof arenaResponses.$inferSelect;
+export type NewArenaResponse = typeof arenaResponses.$inferInsert;

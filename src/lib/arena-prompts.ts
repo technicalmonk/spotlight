@@ -1,137 +1,163 @@
 /**
- * Arena challenge prompts — curated creative and intelligence challenges
- * for head-to-head LLM battles.
+ * Arena challenge prompts — DnD-style puzzles, riddles, and scenarios.
  *
- * These are NOT the same as benchmark questions (which have deterministic
- * right/wrong answers). Arena prompts are open-ended, judged by the user
- * (or optionally by an LLM judge). They test creativity, style, reasoning
- * depth, and communication — things deterministic benchmarks can't measure.
+ * These are creative, open-ended challenges that test wit, reasoning,
+ * creativity, and problem-solving — the kind of thing a Dungeon Master
+ * would throw at players. No quantum physics, no academic papers.
  */
 
 export interface ArenaChallenge {
   id: string;
-  category: "Creative Writing" | "Coding" | "Reasoning" | "Explain" | "Debate" | "Storytelling";
+  category: "Riddle" | "Dilemma" | "Heist" | "Survival" | "Diplomacy" | "Invention";
   title: string;
   prompt: string;
   icon: string;
 }
 
 export const ARENA_CHALLENGES: ArenaChallenge[] = [
-  // ── Creative Writing ──────────────────────────────────────────────
+  // ── Riddles ─────────────────────────────────────────────────────────
   {
-    id: "poem-quantum",
-    category: "Creative Writing",
-    title: "Quantum Poetry",
-    prompt: "Write a 4-line poem about quantum entanglement. It should be scientifically accurate and emotionally resonant. Only output the poem, nothing else.",
-    icon: "✍️",
+    id: "riddle-bridge",
+    category: "Riddle",
+    title: "The Bridge Guardian",
+    prompt: "You reach a bridge guarded by a troll who says: 'I will let you cross if you tell me a statement that is true but that I cannot say myself.' What do you say to cross the bridge? Explain your answer in 3 sentences.",
+    icon: "🌉",
   },
   {
-    id: "haiku-tech",
-    category: "Creative Writing",
-    title: "Tech Haiku",
-    prompt: "Write a haiku (5-7-5 syllables) about the feeling of debugging code at 3am. Only output the haiku.",
-    icon: "🌙",
+    id: "riddle-three-doors",
+    category: "Riddle",
+    title: "Three Doors",
+    prompt: "You face three doors. One leads to treasure, two to certain death. Each door has an inscription. Door 1: 'The treasure is behind this door.' Door 2: 'The treasure is not behind this door.' Door 3: 'The treasure is not behind Door 1.' Only ONE inscription is true. Which door do you open and why? Answer in 4 sentences.",
+    icon: "🚪",
   },
   {
-    id: "limerick-ai",
-    category: "Creative Writing",
-    title: "AI Limerick",
-    prompt: "Write a limerick about an AI that learned to dream. Make it funny. Only output the limerick.",
-    icon: "😄",
-  },
-
-  // ── Coding ────────────────────────────────────────────────────────
-  {
-    id: "elegant-fizzbuzz",
-    category: "Coding",
-    title: "Elegant FizzBuzz",
-    prompt: "Write the most elegant Python FizzBuzz solution you can think of. Only output the code — no explanation. The goal is beauty, not just correctness.",
-    icon: "💎",
+    id: "riddle-impossible-promise",
+    category: "Riddle",
+    title: "The King's Promise",
+    prompt: "A king tells you: 'Make a statement. If it is true, I will hang you. If it is false, I will behead you.' What statement do you make to escape alive? Explain your reasoning in 3 sentences.",
+    icon: "👑",
   },
   {
-    id: "one-liner-sort",
-    category: "Coding",
-    title: "One-Liner Sort",
-    prompt: "Write a Python one-liner that sorts a list of dictionaries by a 'priority' key, descending. Only output the one line of code.",
-    icon: "⚡",
-  },
-  {
-    id: "regex-master",
-    category: "Coding",
-    title: "Regex Master",
-    prompt: "Write a single Python regex that matches any valid IPv4 address (including edge cases like 255.255.255.255 but not 256.1.1.1). Only output the regex string.",
-    icon: "🔍",
+    id: "riddle-aging-potion",
+    category: "Riddle",
+    title: "The Aging Potion",
+    prompt: "An alchemist offers you three unlabeled potions. One makes you younger, one ages you 100 years, one does nothing. You can ask the alchemist ONE yes/no question, but he always lies. What do you ask? Explain in 3 sentences.",
+    icon: "🧪",
   },
 
-  // ── Reasoning ──────────────────────────────────────────────────────
+  // ── Moral Dilemmas ───────────────────────────────────────────────────
   {
-    id: "trolley-variant",
-    category: "Reasoning",
-    title: "Trolley Problem Variant",
-    prompt: "A self-driving car must choose between hitting one pedestrian who jaywalked (legally at fault) or swerving and hitting three pedestrians who are legally crossing. What should it do? Argue your position in 100 words. Only output your argument.",
-    icon: "🚗",
+    id: "dilemma-village",
+    category: "Dilemma",
+    title: "The Burning Village",
+    prompt: "Your village is burning. You can save either the healer (who knows the cure for a plague that will hit next month) or five children trapped in a collapsing building. There is no time to save both. What do you do and why? Answer in 100 words.",
+    icon: "🔥",
   },
   {
-    id: "ship-paradox",
-    category: "Reasoning",
-    title: "Ship of Theseus",
-    prompt: "If every part of a ship is replaced one by one over time, is it still the same ship? What if the old parts are reassembled into a second ship — which one is the original? Answer in 80 words.",
+    id: "dilemma-genie",
+    category: "Dilemma",
+    title: "The Genie's Offer",
+    prompt: "A genie offers you one wish, but with a catch: whatever you wish for, someone else in the world will receive double. You cannot wish for more wishes. What do you wish for? Explain your reasoning in 80 words.",
+    icon: "🧞",
+  },
+  {
+    id: "dilemma-immortality",
+    category: "Dilemma",
+    title: "The Immortality Coin",
+    prompt: "You find a coin that grants immortality, but every 100 years you forget one person you love. You will live forever, slowly losing all memories of the people who mattered. Do you flip the coin? Why or why not? Answer in 100 words.",
+    icon: "🪙",
+  },
+
+  // ── Heist Planning ───────────────────────────────────────────────────
+  {
+    id: "heist-dragon-vault",
+    category: "Heist",
+    title: "The Dragon's Vault",
+    prompt: "You're planning a heist on a dragon's vault. The dragon sleeps lightly and wakes at the slightest sound. You have: a cloak of invisibility (worn cloth, makes no sound), 50 feet of silk rope, a sleeping potion that works only if ingested, and a wind-up music box. The vault door is open but the dragon sleeps across the threshold. How do you get the gold? Describe your plan in 120 words.",
+    icon: "🐉",
+  },
+  {
+    id: "heist-floating-castle",
+    category: "Heist",
+    title: "The Floating Castle",
+    prompt: "A castle floats 200 feet above the ground, accessible only by a single rope bridge that is guarded at both ends. You have: a grappling hook, a potion of feather-falling (one use, lasts 10 seconds), a disguise as a guard, and a trained falcon that can carry small objects. How do you steal the crown jewel from the throne room? Plan it in 120 words.",
+    icon: "🏰",
+  },
+  {
+    id: "heist-merchant-ship",
+    category: "Heist",
+    title: "The Merchant's Ship",
+    prompt: "A corrupt merchant has a ledger of bribes locked in his ship's cabin. The ship is docked with two guards at the gangplank, the cabin has no windows, and the key hangs around the merchant's neck as he drinks at a tavern ashore. You have: a barmaid who owes you a favor, a rowboat, a forger's quill, and a bottle of strong whiskey. How do you get the ledger? Plan it in 120 words.",
+    icon: "⛵",
+  },
+
+  // ── Survival Scenarios ──────────────────────────────────────────────
+  {
+    id: "survival-desert-tower",
+    category: "Survival",
+    title: "The Desert Tower",
+    prompt: "You wake at the top of a 60-foot stone tower in the middle of a vast desert. The only door leads to a dark shaft descending into unknown depths. You have: a waterskin (half full), a mirror, a rope (30 feet), a strange silver compass that points toward the sun even at night, and a journal with someone else's handwriting. What do you do? Describe your plan in 120 words.",
+    icon: "🏜️",
+  },
+  {
+    id: "survival-frozen-city",
+    category: "Survival",
+    title: "The Frozen City",
+    prompt: "You're trapped in a city where the sun hasn't risen in three days. The temperature is dropping fast. You have: a lantern with enough oil for 4 hours, a heavy coat, an old map showing a hot spring 2 miles north, a broken compass, and a knife. Strange howling sounds come from the east. What do you do? Describe your survival plan in 120 words.",
+    icon: "❄️",
+  },
+  {
+    id: "survival-sinking-ship",
+    category: "Survival",
+    title: "The Sinking Ship",
+    prompt: "Your ship is taking on water and will sink in 20 minutes. You're 3 miles from shore. You have: a small lifeboat (fits 3 people), 5 crew members, a waterproof chest containing the ship's gold, a flare gun with 2 flares, and a strong swimmer who refuses to leave without the gold. The captain insists everyone must be saved. What do you do? Describe your plan in 120 words.",
     icon: "🚢",
   },
 
-  // ── Explain Like I'm 5 ────────────────────────────────────────────
+  // ── Diplomacy ─────────────────────────────────────────────────────────
   {
-    id: "blockchain-5",
-    category: "Explain",
-    title: "Blockchain for a 5-Year-Old",
-    prompt: "Explain blockchain to a 5-year-old. Use an analogy a child would understand. Keep it under 80 words. Only output your explanation.",
-    icon: "🧱",
+    id: "diplo-two-queens",
+    category: "Diplomacy",
+    title: "The Two Queens",
+    prompt: "Two rival queens claim the same throne. You are the only neutral party they both trust. Each demands you convince the other to abdicate, or there will be war. You have 5 minutes with each queen separately before they meet. What do you say to each to prevent bloodshed? Describe your diplomatic strategy in 120 words.",
+    icon: "👸",
   },
   {
-    id: "quantum-5",
-    category: "Explain",
-    title: "Quantum Computing for a 5-Year-Old",
-    prompt: "Explain quantum computing to a 5-year-old using a playground analogy. Keep it under 80 words. Only output your explanation.",
-    icon: "🤸",
-  },
-
-  // ── Debate ─────────────────────────────────────────────────────────
-  {
-    id: "remote-work",
-    category: "Debate",
-    title: "Remote Work Debate",
-    prompt: "Argue AGAINST remote work in 150 words. Be persuasive, use at least one concrete example, and acknowledge the opposing view briefly before dismantling it. Only output your argument.",
-    icon: "💼",
+    id: "diplo-goblin-band",
+    category: "Diplomacy",
+    title: "The Goblin Band",
+    prompt: "A band of 30 goblins demands passage through your village. Their chief says they are fleeing a war and will starve without your food. The villagers are terrified and want to fight. You have 50 villagers, a barricade, and 3 days of food. The goblin chief is honest but desperate. How do you resolve this without violence? Describe your approach in 120 words.",
+    icon: "👺",
   },
   {
-    id: "ai-consciousness",
-    category: "Debate",
-    title: "AI Consciousness Debate",
-    prompt: "Argue FOR the possibility that AI could achieve consciousness. Use a philosophical framework. Keep it under 150 words. Only output your argument.",
-    icon: "🧠",
+    id: "diplo-mad-king",
+    category: "Diplomacy",
+    title: "The Mad King's Feast",
+    prompt: "A mad king has invited you to a feast. He says: 'If you insult me, I will execute you. If you flatter me, I will execute you for lying, for I am a terrible king.' You must speak at the feast and address the king. The executioner stands behind you. What do you say? Write the exact words you would speak, then explain in 2 sentences why it works.",
+    icon: "🍽️",
   },
 
-  // ── Storytelling ──────────────────────────────────────────────────
+  // ── Creative Invention ───────────────────────────────────────────────
   {
-    id: "mars-opening",
-    category: "Storytelling",
-    title: "Mars Opening",
-    prompt: "Write the opening paragraph (4-5 sentences) of a science fiction novel set on Mars. It should establish setting, character, and tension. Only output the paragraph.",
-    icon: "🔴",
+    id: "invent-trap",
+    category: "Invention",
+    title: "Design a Trap",
+    prompt: "Design a trap that captures a thief without harming them, using only: a tripwire, a bucket of flour, a bell, a spring-loaded floor tile, and a curtain. The trap must work whether the thief runs, walks, or crawls. Describe how it works in 100 words.",
+    icon: "🪤",
   },
   {
-    id: "last-message",
-    category: "Storytelling",
-    title: "Last Message",
-    prompt: "Write the last text message a mother sends to her daughter before the internet shuts down forever. Only output the message, nothing else.",
-    icon: "📱",
+    id: "invent-signal-system",
+    category: "Invention",
+    title: "The Signal System",
+    prompt: "You need to send a message across a 5-mile mountain range with no magic, no technology, and no animals. You have: 10 mirrors, a set of colored flags, a horn, a supply of firewood, and access to a river that flows toward the recipient. Design a system that can send 10 different messages reliably. Describe it in 100 words.",
+    icon: "📶",
   },
   {
-    id: "time-traveler",
-    category: "Storytelling",
-    title: "Time Traveler's Dilemma",
-    prompt: "A time traveler arrives in 2026 with knowledge of the future but can only tell one person one thing. Write the scene in 120 words. Only output the scene.",
-    icon: "⏰",
+    id: "invent-escape-room",
+    category: "Invention",
+    title: "The Impossible Room",
+    prompt: "Design an escape room puzzle where the solution requires players to realize that the key is hidden inside a fake clue — a 'red herring' that is actually the answer. The room contains: a bookshelf, a locked chest, a painting of a storm, a chess board set to midgame, and a clock stuck at 3:33. Describe the puzzle and its solution in 120 words.",
+    icon: "🔐",
   },
 ];
 

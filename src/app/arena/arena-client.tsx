@@ -101,6 +101,23 @@ export function ArenaClient({ models }: { models: ModelChoice[] }) {
 
       if (!res.ok) throw new Error(`Battle failed: ${res.status}`);
 
+      // Check if this is a cached response (JSON) or a live stream (SSE)
+      const contentType = res.headers.get("content-type") || "";
+
+      if (contentType.includes("application/json")) {
+        // Both responses were cached — display immediately
+        const data = await res.json();
+        if (data.type === "cached") {
+          setResponseA(data.a || "");
+          setResponseB(data.b || "");
+          setStreamingA(false);
+          setStreamingB(false);
+          setPhase("results");
+          return;
+        }
+      }
+
+      // Live SSE stream
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
@@ -130,6 +147,14 @@ export function ArenaClient({ models }: { models: ModelChoice[] }) {
               setStreamingA(false);
               setStreamingB(false);
               setPhase("results");
+            } else if (parsed.side === "a" && parsed.cached) {
+              // Cached response for side A — set the full text
+              setResponseA(parsed.content || "");
+              setStreamingA(false);
+            } else if (parsed.side === "b" && parsed.cached) {
+              // Cached response for side B — set the full text
+              setResponseB(parsed.content || "");
+              setStreamingB(false);
             } else if (parsed.side === "a" && parsed.content) {
               setResponseA((prev) => prev + parsed.content);
             } else if (parsed.side === "b" && parsed.content) {
