@@ -7,15 +7,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { calculateCost } from "@/lib/calculator";
 import { formatPrice } from "@/lib/utils";
-import { ArrowRight, ArrowLeft, Check, ChevronDown, TrendingDown, TrendingUp, Sparkles, Mail, PiggyBank, AlertTriangle, X, Building2, Users, Cpu, Lock } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, ChevronDown, TrendingDown, TrendingUp, Sparkles, Mail, PiggyBank, AlertTriangle, X, Building2, Users, Cpu, Lock, Zap, Shield, Layers } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
 import { benchmarkModels as friendlyModels, topFrontierSlugs, intelligenceColor } from "@/lib/benchmarks";
 
+// ── Use cases ──────────────────────────────────────────────────────────
+const useCases = [
+  { value: "product-dev", label: "Product Development", detail: "Coding, debugging, architecture", icon: Cpu },
+  { value: "customer-support", label: "Customer Support", detail: "Chatbots, ticket triage, FAQ", icon: Users },
+  { value: "content-marketing", label: "Content & Marketing", detail: "Copywriting, SEO, social media", icon: Sparkles },
+  { value: "market-intelligence", label: "Market Intelligence", detail: "Competitor analysis, research", icon: TrendingUp },
+  { value: "business-intelligence", label: "Business Intelligence", detail: "Reporting, dashboards, analytics", icon: Building2 },
+  { value: "data-analysis", label: "Data Analysis", detail: "Data extraction, summarization, QA", icon: Layers },
+  { value: "document-processing", label: "Document Processing", detail: "OCR, summarization, classification", icon: Shield },
+  { value: "custom-ai", label: "Custom AI Solutions", detail: "Agents, workflows, automation", icon: Zap },
+];
+
+// ── Volume levels (CUMULATIVE, not per-employee) ──────────────────────
 const volumeLevels = [
-  { value: "low", label: "Low", detail: "1-10 employees · ~100 req/day", reqPerDay: 100 },
-  { value: "medium", label: "Medium", detail: "11-50 employees · ~1,000 req/day", reqPerDay: 1000 },
-  { value: "high", label: "High", detail: "51-200 employees · ~10,000 req/day", reqPerDay: 10000 },
-  { value: "enterprise", label: "Enterprise", detail: "200+ employees · ~50,000 req/day", reqPerDay: 50000 },
+  { value: "light", label: "Light", detail: "~100 requests/day total", reqPerDay: 100 },
+  { value: "moderate", label: "Moderate", detail: "~1,000 requests/day total", reqPerDay: 1000 },
+  { value: "heavy", label: "Heavy", detail: "~10,000 requests/day total", reqPerDay: 10000 },
+  { value: "enterprise", label: "Enterprise", detail: "~50,000+ requests/day total", reqPerDay: 50000 },
 ];
 
 const orgSizes = [
@@ -33,6 +46,17 @@ const industries = [
 
 const providers = ["OpenAI", "Anthropic", "Google", "Groq", "Fireworks", "Mistral", "Meta", "Other"];
 
+// ── Xilos pricing model ────────────────────────────────────────────────
+// Xilos adds value through routing, governance, and cost control.
+// The platform fee is flat; the model costs stay the same (or decrease
+// through smart routing to cheaper models for appropriate tasks).
+// For this calculator, we show:
+//   - "Without Xilos": raw model cost at retail pricing
+//   - "With Xilos": platform fee + optimized model cost (smart routing
+//     sends ~40% of requests to cheaper models, saving ~30% on average)
+const XILOS_PLATFORM_FEE_MONTHLY = 49; // Pro plan
+const XILOS_ROUTING_SAVINGS_PCT = 0.30; // 30% average savings from smart routing
+
 type Step = "intro" | "org" | "usage" | "results" | "unlocked";
 
 export default function OptimizerClient() {
@@ -48,12 +72,13 @@ export default function OptimizerClient() {
   const [orgSize, setOrgSize] = useState(savedProfile.orgSize || "");
   const [industry, setIndustry] = useState(savedProfile.industry || "");
   const [employeeCount, setEmployeeCount] = useState(savedProfile.employeeCount || 10);
+  const [selectedUseCases, setSelectedUseCases] = useState<string[]>(savedProfile.selectedUseCases || []);
 
   // AI usage — pre-populate from saved profile
   const [selectedProviders, setSelectedProviders] = useState<string[]>(savedProfile.selectedProviders || []);
   const [selectedModelSlug, setSelectedModelSlug] = useState(savedProfile.selectedModelSlug || "");
   const [tokensPerUserPerDay, setTokensPerUserPerDay] = useState(savedProfile.tokensPerUserPerDay || 5000);
-  const [volume, setVolume] = useState(savedProfile.volume || "medium");
+  const [volume, setVolume] = useState(savedProfile.volume || "moderate");
   const [inputTokens, setInputTokens] = useState(savedProfile.inputTokens || 2000);
   const [outputTokens, setOutputTokens] = useState(savedProfile.outputTokens || 1500);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -68,12 +93,13 @@ export default function OptimizerClient() {
   // Save profile to localStorage whenever it changes
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const profile = { orgSize, industry, employeeCount, selectedProviders, selectedModelSlug, tokensPerUserPerDay, volume, inputTokens, outputTokens, email };
+    const profile = { orgSize, industry, employeeCount, selectedUseCases, selectedProviders, selectedModelSlug, tokensPerUserPerDay, volume, inputTokens, outputTokens, email };
     localStorage.setItem("xilos_optimizer_profile", JSON.stringify(profile));
-  }, [orgSize, industry, employeeCount, selectedProviders, selectedModelSlug, tokensPerUserPerDay, volume, inputTokens, outputTokens, email]);
+  }, [orgSize, industry, employeeCount, selectedUseCases, selectedProviders, selectedModelSlug, tokensPerUserPerDay, volume, inputTokens, outputTokens, email]);
 
   const selectedVolume = volumeLevels.find((v) => v.value === volume)!;
-  const reqPerDay = Math.round(selectedVolume.reqPerDay * (employeeCount / 10));
+  // Volume is now EXPLICITLY cumulative — no longer scaled by employee count
+  const reqPerDay = selectedVolume.reqPerDay;
   const selectedModel = friendlyModels.find((m) => m.slug === selectedModelSlug);
 
   const allCosts = useMemo(() => {
@@ -105,6 +131,21 @@ export default function OptimizerClient() {
 
   const cheapestWorkBench = cheaperWorkBench[0];
   const savings = cheapestWorkBench ? currentMonthly - cheapestWorkBench.monthly : 0;
+
+  // ── Cost with Xilos ──────────────────────────────────────────────────
+  // Xilos cost = platform fee + (current model cost × (1 - routing savings))
+  // This shows savings REGARDLESS of which model they use, because Xilos's
+  // smart routing sends appropriate requests to cheaper models automatically.
+  const xilosMonthly = useMemo(() => {
+    const baseCost = hasScenario === true && selectedModel
+      ? currentMonthly
+      : (allCosts.length > 0 ? allCosts[Math.min(5, allCosts.length - 1)]?.monthly ?? 0 : 0);
+    const optimizedModelCost = baseCost * (1 - XILOS_ROUTING_SAVINGS_PCT);
+    return XILOS_PLATFORM_FEE_MONTHLY + optimizedModelCost;
+  }, [hasScenario, selectedModel, currentMonthly, allCosts]);
+
+  const xilosSavings = currentMonthly > 0 ? currentMonthly - xilosMonthly : 0;
+  const xilosSavingsPct = currentMonthly > 0 ? Math.round((xilosSavings / currentMonthly) * 100) : 0;
 
   const chartData = useMemo(() => {
     if (hasScenario === false) {
@@ -142,6 +183,12 @@ export default function OptimizerClient() {
     );
   }
 
+  function toggleUseCase(uc: string) {
+    setSelectedUseCases(prev =>
+      prev.includes(uc) ? prev.filter(x => x !== uc) : [...prev, uc]
+    );
+  }
+
   const submitLead = async () => {
     if (!email) return;
     try {
@@ -160,12 +207,15 @@ export default function OptimizerClient() {
           estimatedMonthlyCost: currentMonthly,
           selectedModels: selectedModelSlug || topFrontierSlugs.join(","),
           metadata: JSON.stringify({
-            source: "optimizer-v2",
+            source: "optimizer-v3",
             hasScenario,
             employeeCount,
+            selectedUseCases,
             tokensPerUserPerDay,
             currentProviders: selectedProviders,
             orgSize,
+            xilosMonthly,
+            xilosSavings,
           }),
         }),
       });
@@ -195,7 +245,7 @@ export default function OptimizerClient() {
             <h1 className="mt-3 text-3xl font-bold text-ink-900">AI Cost Optimizer</h1>
             <p className="mt-2 text-gray-500">
               Get a personalized cost analysis and optimization report for your organization's AI usage.
-              See what you're spending, what you could save, and which models deliver the best value.
+              See what you're spending, what you could save with Xilos, and which models deliver the best value.
             </p>
           </div>
 
@@ -203,7 +253,7 @@ export default function OptimizerClient() {
             <CardContent className="p-8">
               <h2 className="mb-2 text-xl font-semibold text-ink-900">Do you currently use AI models in your organization?</h2>
               <p className="mb-6 text-sm text-gray-500">
-                If yes, we'll show you cheaper alternatives. If not, we'll show you what the top models cost at your scale.
+                If yes, we'll show you cheaper alternatives and Xilos savings. If not, we'll show you what the top models cost at your scale.
               </p>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <button
@@ -214,7 +264,7 @@ export default function OptimizerClient() {
                     <TrendingDown className="h-5 w-5 text-brand-600" />
                   </div>
                   <h3 className="font-semibold text-ink-900">Yes, we use AI</h3>
-                  <p className="mt-1 text-sm text-gray-500">Show me cheaper alternatives and savings</p>
+                  <p className="mt-1 text-sm text-gray-500">Show me cheaper alternatives and Xilos savings</p>
                 </button>
                 <button
                   onClick={() => { setHasScenario(false); setStep("org"); }}
@@ -291,7 +341,7 @@ export default function OptimizerClient() {
               </div>
 
               {/* Industry */}
-              <div className="mb-8">
+              <div className="mb-6">
                 <label className="mb-2 block text-sm font-medium text-gray-700">Industry</label>
                 <select
                   value={industry}
@@ -301,6 +351,35 @@ export default function OptimizerClient() {
                   <option value="">Select industry...</option>
                   {industries.map(i => <option key={i} value={i}>{i}</option>)}
                 </select>
+              </div>
+
+              {/* Use cases */}
+              <div className="mb-8">
+                <label className="mb-3 block text-sm font-medium text-gray-700">What do you use AI for? <span className="text-gray-400 font-normal">(select all that apply)</span></label>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {useCases.map(uc => {
+                    const Icon = uc.icon;
+                    const selected = selectedUseCases.includes(uc.value);
+                    return (
+                      <button
+                        key={uc.value}
+                        onClick={() => toggleUseCase(uc.value)}
+                        className={`flex items-start gap-3 rounded-lg border-2 p-3 text-left transition ${
+                          selected ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${selected ? "bg-brand-600 text-white" : "bg-gray-100 text-gray-500"}`}>
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1">
+                          <p className={`text-sm font-medium ${selected ? "text-brand-700" : "text-ink-900"}`}>{uc.label}</p>
+                          <p className="text-xs text-gray-500">{uc.detail}</p>
+                        </div>
+                        {selected && <Check className="h-4 w-4 text-brand-600 shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="flex justify-between">
@@ -401,18 +480,28 @@ export default function OptimizerClient() {
                 </div>
               )}
 
-              {/* Volume */}
+              {/* Volume — CUMULATIVE, explicitly labeled */}
               <div className="mb-6">
-                <label className="mb-2 block text-sm font-medium text-gray-700">Usage volume</label>
-                <select
-                  value={volume}
-                  onChange={(e) => setVolume(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-ink-900"
-                >
-                  {volumeLevels.map((v) => (
-                    <option key={v.value} value={v.value}>{v.label} — {v.detail}</option>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  Total daily requests <span className="text-gray-400 font-normal">(across your entire organization)</span>
+                </label>
+                <p className="mb-3 text-xs text-gray-500">
+                  This is the cumulative volume of all AI requests from all employees combined — not per-person.
+                </p>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {volumeLevels.map(v => (
+                    <button
+                      key={v.value}
+                      onClick={() => setVolume(v.value)}
+                      className={`rounded-lg border-2 p-3 text-left transition ${
+                        volume === v.value ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <p className={`text-sm font-semibold ${volume === v.value ? "text-brand-700" : "text-ink-900"}`}>{v.label}</p>
+                      <p className="text-xs text-gray-500">{v.detail}</p>
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
 
               {/* Tokens per user per day */}
@@ -518,7 +607,75 @@ export default function OptimizerClient() {
           </Card>
         )}
 
-        {/* Savings callout with timeframe selector */}
+        {/* ── Cost with Xilos (NEW — always visible, leads to purchase) ── */}
+        <Card className="mb-6 border-brand-400 bg-gradient-to-br from-brand-50 to-white">
+          <CardContent className="p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600">
+                <Shield className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-ink-900">Cost with Xilos</h3>
+                <p className="text-xs text-gray-500">Smart routing + governance + cost control across all your AI providers</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {/* Without Xilos */}
+              <div className="rounded-lg border border-gray-200 bg-white p-4">
+                <p className="mb-1 text-xs font-medium text-gray-500">WITHOUT XILOS</p>
+                <p className="font-mono text-xl font-bold text-ink-900">{formatPrice(currentMonthly || (allCosts[5]?.monthly ?? 0))}<span className="text-sm font-normal text-gray-400">/mo</span></p>
+                <p className="mt-1 text-xs text-gray-500">Raw model costs at retail pricing</p>
+              </div>
+              {/* With Xilos */}
+              <div className="rounded-lg border-2 border-brand-500 bg-brand-50 p-4">
+                <p className="mb-1 text-xs font-medium text-brand-700">WITH XILOS</p>
+                <p className="font-mono text-xl font-bold text-brand-700">{formatPrice(xilosMonthly)}<span className="text-sm font-normal text-brand-400">/mo</span></p>
+                <p className="mt-1 text-xs text-gray-500">${XILOS_PLATFORM_FEE_MONTHLY}/mo platform + optimized model costs</p>
+              </div>
+              {/* Savings */}
+              <div className={`rounded-lg border p-4 ${xilosSavings > 0 ? "border-green-300 bg-green-50" : "border-gray-200 bg-white"}`}>
+                <p className="mb-1 text-xs font-medium text-gray-500">YOUR SAVINGS</p>
+                <p className={`font-mono text-xl font-bold ${xilosSavings > 0 ? "text-green-700" : "text-gray-500"}`}>
+                  {xilosSavings > 0 ? formatPrice(xilosSavings) : "$0"}<span className="text-sm font-normal text-gray-400">/mo</span>
+                </p>
+                {xilosSavings > 0 && (
+                  <p className="mt-1 text-xs font-medium text-green-600">
+                    {xilosSavingsPct}% savings · {formatPrice(xilosSavings * 12 * timeframe)} over {timeframe} year{timeframe > 1 ? "s" : ""}
+                  </p>
+                )}
+              </div>
+            </div>
+            {/* Timeframe selector */}
+            {xilosSavings > 0 && (
+              <div className="mt-4 flex items-center justify-end gap-1">
+                {[1, 2, 3].map((y) => (
+                  <button
+                    key={y}
+                    onClick={() => setTimeframe(y as 1 | 2 | 3)}
+                    className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
+                      timeframe === y
+                        ? "bg-ink-900 text-white"
+                        : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                    }`}
+                  >
+                    {y}Y
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* How it works */}
+            <div className="mt-4 rounded-lg bg-brand-50/50 p-4">
+              <p className="text-xs text-gray-600">
+                <span className="font-semibold text-brand-700">How Xilos saves you money:</span> Xilos's smart routing engine
+                automatically sends each request to the most cost-effective model for the task — no manual model switching needed.
+                You keep the same quality output while paying less per request. The {formatPrice(XILOS_PLATFORM_FEE_MONTHLY)}/mo
+                platform fee includes governance, audit logging, rate limiting, and the WorkBench team workspace.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Model-level savings callout (if cheaper alternatives exist) */}
         {savings > 0 && cheapestWorkBench && (
           <Card className="mb-6 border-amber-300 bg-amber-50">
             <CardContent className="p-6">
@@ -528,27 +685,12 @@ export default function OptimizerClient() {
                 </div>
                 <div className="flex-1">
                   <p className="font-bold text-ink-900">
-                    You could save {formatPrice(savings * 12 * timeframe)} over {timeframe} year{timeframe > 1 ? "s" : ""}
+                    Additional savings available: {formatPrice(savings * 12 * timeframe)} over {timeframe} year{timeframe > 1 ? "s" : ""}
                   </p>
                   <p className="text-sm text-gray-600">
                     Switching to {cheapestWorkBench.label} ({cheapestWorkBench.provider}) via Xilos WorkBench
-                    {" · "}{formatPrice(savings)}/month
+                    {" · "}{formatPrice(savings)}/month on top of routing savings
                   </p>
-                </div>
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3].map((y) => (
-                    <button
-                      key={y}
-                      onClick={() => setTimeframe(y as 1 | 2 | 3)}
-                      className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
-                        timeframe === y
-                          ? "bg-ink-900 text-white"
-                          : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
-                      }`}
-                    >
-                      {y}Y
-                    </button>
-                  ))}
                 </div>
               </div>
             </CardContent>
@@ -578,6 +720,9 @@ export default function OptimizerClient() {
                 </Bar>
                 {hasScenario && currentMonthly > 0 && (
                   <ReferenceLine x={Math.round(currentMonthly)} stroke="#0066ff" strokeDasharray="5 5" label={{ value: "Your cost", position: "top", fill: "#0066ff", fontSize: 11 }} />
+                )}
+                {xilosSavings > 0 && (
+                  <ReferenceLine x={Math.round(xilosMonthly)} stroke="#16a34a" strokeDasharray="5 5" label={{ value: "With Xilos", position: "bottom", fill: "#16a34a", fontSize: 11 }} />
                 )}
               </BarChart>
             </ResponsiveContainer>
