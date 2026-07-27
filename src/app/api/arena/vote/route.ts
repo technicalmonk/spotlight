@@ -3,6 +3,7 @@ import { db } from "@/db/client";
 import { arenaBattles } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 interface VoteRequest {
   challengeId: string;

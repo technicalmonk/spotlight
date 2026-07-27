@@ -1,8 +1,6 @@
 import { ArenaClient } from "./arena-client";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
 import { db } from "@/db/client";
-import { models, providers, pricingTiers } from "@/db/schema";
+import { models, providers } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 
@@ -28,7 +26,6 @@ async function getArenaModels() {
       .where(eq(models.isActive, true))
       .limit(100);
 
-    // Filter to models with OpenRouter IDs
     return result
       .filter((m) => m.openrouterModelId && m.openrouterModelId.trim() !== "")
       .map((m) => ({
@@ -45,13 +42,5 @@ async function getArenaModels() {
 export default async function ArenaPage() {
   const modelsList = await getArenaModels();
 
-  return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1">
-        <ArenaClient models={modelsList} />
-      </main>
-      <Footer />
-    </div>
-  );
+  return <ArenaClient models={modelsList} />;
 }
