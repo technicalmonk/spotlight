@@ -351,6 +351,148 @@ export default function BenchmarkPage() {
             </p>
           </div>
         </section>
+
+        {/* Competitive comparison */}
+        <section className="border-t border-gray-200 bg-gray-50 py-16">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <h2 className="mb-2 text-2xl font-bold text-ink-900">How We Compare to Other Benchmarks</h2>
+            <p className="mb-8 text-gray-500">
+              The LLM benchmark landscape is crowded. Here's how the Xilos Intelligence Benchmark
+              differs from the major players — and why we built it.
+            </p>
+
+            {/* Comparison table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b-2 border-gray-200 text-left">
+                    <th className="py-3 px-4 font-semibold text-gray-700">Benchmark</th>
+                    <th className="py-3 px-4 font-semibold text-gray-700">Questions</th>
+                    <th className="py-3 px-4 font-semibold text-gray-700">Categories</th>
+                    <th className="py-3 px-4 font-semibold text-gray-700">Scoring Method</th>
+                    <th className="py-3 px-4 font-semibold text-gray-700">Contamination Strategy</th>
+                    <th className="py-3 px-4 font-semibold text-gray-700">Coverage</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  <tr className="bg-brand-50 font-medium">
+                    <td className="py-3 px-4 text-brand-700">Xilos Intelligence Benchmark</td>
+                    <td className="py-3 px-4">20</td>
+                    <td className="py-3 px-4">4 (Reasoning, Coding, Math, Knowledge)</td>
+                    <td className="py-3 px-4">Deterministic check functions (no judge)</td>
+                    <td className="py-3 px-4">Custom questions, never from public datasets</td>
+                    <td className="py-3 px-4">337+ models via OpenRouter</td>
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-4 font-medium text-ink-900">LiveBench</td>
+                    <td className="py-3 px-4">~18 tasks</td>
+                    <td className="py-3 px-4">7 (Reasoning, Coding, Agentic, Math, Data, Language, IF)</td>
+                    <td className="py-3 px-4">Programmatic + objective ground truth</td>
+                    <td className="py-3 px-4">Frequently updated with fresh real-world data</td>
+                    <td className="py-3 px-4">~40 top models (curated)</td>
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-4 font-medium text-ink-900">Artificial Analysis Intelligence Index</td>
+                    <td className="py-3 px-4">~3,000+</td>
+                    <td className="py-3 px-4">4 (Agents, Coding, Scientific, General)</td>
+                    <td className="py-3 px-4">Mixed: judge LLM, code execution, regex, Elo</td>
+                    <td className="py-3 px-4">Multiple datasets, some periodically updated</td>
+                    <td className="py-3 px-4">~40 frontier models (curated)</td>
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-4 font-medium text-ink-900">LMSYS Chatbot Arena</td>
+                    <td className="py-3 px-4">Open-ended (user prompts)</td>
+                    <td className="py-3 px-4">1 (human preference)</td>
+                    <td className="py-3 px-4">Human pairwise voting → Elo rating</td>
+                    <td className="py-3 px-4">Live user prompts (always fresh)</td>
+                    <td className="py-3 px-4">100+ models (crowdsourced)</td>
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-3 px-4 font-medium text-ink-900">MMLU-Pro</td>
+                    <td className="py-3 px-4">12,000</td>
+                    <td className="py-3 px-4">14 subjects</td>
+                    <td className="py-3 px-4">Multiple choice (10 options)</td>
+                    <td className="py-3 px-4">Static dataset (contamination risk)</td>
+                    <td className="py-3 px-4">~50 models (curated)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Our positioning */}
+            <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+              <Card className="border-brand-200">
+                <CardContent className="p-6">
+                  <h3 className="mb-3 font-semibold text-ink-900">Our advantages</h3>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+                      <span><strong>Scale of coverage:</strong> 337+ models benchmarked — 8x more than LiveBench or Artificial Analysis, which curate ~40 frontier models.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+                      <span><strong>Zero judge bias:</strong> No LLM-as-judge, no human eval. Every check is deterministic code. The same answer always gets the same score.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+                      <span><strong>Reproducible:</strong> Temperature=0, no system prompt, no few-shot. Anyone can run the exact same test and get the same result.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+                      <span><strong>Open and transparent:</strong> All questions, check functions, and scores are public. No proprietary grading pipeline.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+                      <span><strong>Cost-integrated:</strong> Every score sits next to pricing data. Users see intelligence and cost together, not separated.</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-gray-200">
+                <CardContent className="p-6">
+                  <h3 className="mb-3 font-semibold text-ink-900">Our trade-offs (honestly)</h3>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gray-400" />
+                      <span><strong>Question count:</strong> 20 questions vs LiveBench's 18 tasks (with many sub-questions each) or MMLU-Pro's 12,000. Less statistical power per model.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gray-400" />
+                      <span><strong>Difficulty ceiling:</strong> Our questions test core competence, not frontier capability. Top models score 95-100, so the benchmark can't distinguish between GPT-5.6 Sol and Claude Fable 5 — both get 100. LiveBench and Artificial Analysis are better at discriminating at the top end.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gray-400" />
+                      <span><strong>No agentic tasks:</strong> We don't test tool use, multi-step reasoning, or agentic workflows. Artificial Analysis's Intelligence Index v4.1 weighs agents at 34%.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gray-400" />
+                      <span><strong>No instruction following:</strong> We don't test how well models follow complex formatting instructions. LiveBench has a dedicated IF category.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gray-400" />
+                      <span><strong>Static questions:</strong> Unlike LiveBench (which updates tasks with fresh data), our questions are fixed. Version 1 stays stable for reproducibility — new versions will add harder questions.</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* When to use which */}
+            <Card className="mt-6 bg-ink-900 text-white">
+              <CardContent className="p-6">
+                <h3 className="mb-3 font-semibold text-white">When to use which benchmark</h3>
+                <div className="space-y-2 text-sm text-gray-300">
+                  <p><span className="font-semibold text-white">Xilos Intelligence Benchmark:</span> When you need broad coverage (337+ models) and a quick, fair, reproducible intelligence signal. Best for cost-vs-intelligence comparisons across the entire model landscape.</p>
+                  <p><span className="font-semibold text-white">LiveBench:</span> When you need contamination-free, frequently updated scores on frontier models with category-level discrimination.</p>
+                  <p><span className="font-semibold text-white">Artificial Analysis Intelligence Index:</span> When you need a composite score weighted toward agentic capability and real-world knowledge work.</p>
+                  <p><span className="font-semibold text-white">Chatbot Arena:</span> When you care about human preference and real-world conversational quality over objective correctness.</p>
+                  <p><span className="font-semibold text-white">MMLU-Pro:</span> When you need deep, multi-domain academic knowledge evaluation at graduate level.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
       </main>
       <Footer />
     </div>
