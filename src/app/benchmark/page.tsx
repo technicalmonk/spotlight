@@ -1,5 +1,3 @@
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Brain, Code, Calculator, BookOpen, CheckCircle2, GitBranch, Clock, Database, RefreshCw, ExternalLink, ArrowRight, Shield } from "lucide-react";
@@ -98,10 +96,8 @@ const methodology = [
 
 export default function BenchmarkPage() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1">
-        {/* Hero */}
+    <>
+      {/* Hero */}
         <section className="border-b border-gray-200 bg-gradient-to-br from-brand-50/50 via-white to-white">
           <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="flex items-center gap-2">
@@ -493,8 +489,6 @@ export default function BenchmarkPage() {
             </Card>
           </div>
         </section>
-      </main>
-      <Footer />
-    </div>
+    </>
   );
 }

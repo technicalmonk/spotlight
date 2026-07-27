@@ -1,6 +1,6 @@
 import { db } from "@/db/client";
 import { modelBenchmarks, models, providers } from "@/db/schema";
-import { BENCHMARK_QUESTIONS, BENCHMARK_VERSION } from "@/lib/benchmark-suite";
+import { BENCHMARK_QUESTIONS_TIER1, BENCHMARK_QUESTIONS_TIER2, BENCHMARK_VERSION, calculateIntelligenceScore } from "@/lib/benchmark-suite";
 import { eq, isNull, ne, and, notInArray } from "drizzle-orm";
 import { neon } from "@neondatabase/serverless";
 
@@ -99,35 +99,63 @@ async function askModel(
 
 /**
  * Benchmark a single model across all questions.
+ * Runs Tier 1 (20 questions). If the model scores 100, runs Tier 2 (10 challenge
+ * questions) to break the tie. Final score: 100 + (tier2/10 * 10), max 110.0.
  */
 async function benchmarkModel(
   model: ModelInfo,
-  apiKey: string
+  apiKey: string,
 ): Promise<{
   intelligenceScore: number;
   reasoningScore: number;
   codingScore: number;
   mathScore: number;
   knowledgeScore: number;
+  tier2Score: number | null;
 }> {
   const results = { reasoning: 0, coding: 0, math: 0, knowledge: 0 };
   const counts = { reasoning: 0, coding: 0, math: 0, knowledge: 0 };
 
-  for (const q of BENCHMARK_QUESTIONS) {
+  // ── Tier 1: Core questions ──────────────────────────────────────────
+  for (const q of BENCHMARK_QUESTIONS_TIER1) {
     const response = await askModel(model.openrouterModelId, q.question, apiKey);
     const correct = q.check(response);
 
-    counts[q.category]++;
-    if (correct) results[q.category]++;
+    counts[q.category as keyof typeof counts]++;
+    if (correct) results[q.category as keyof typeof results]++;
 
-    // Small delay to avoid rate limiting
     await new Promise((r) => setTimeout(r, 500));
   }
 
-  const intelligenceScore = Math.round(
-    ((results.reasoning + results.coding + results.math + results.knowledge) /
-      (counts.reasoning + counts.coding + counts.math + counts.knowledge)) *
-      100
+  const tier1Correct =
+    results.reasoning + results.coding + results.math + results.knowledge;
+  const tier1Total =
+    counts.reasoning + counts.coding + counts.math + counts.knowledge;
+
+  let tier2Correct = 0;
+  let tier2Score: number | null = null;
+
+  // ── Tier 2: Challenge questions (only if Tier 1 was perfect) ────────
+  if (tier1Correct === tier1Total) {
+    console.log(`  [tier2] ${model.name} scored 100 on Tier 1 — running challenge questions...`);
+
+    for (const q of BENCHMARK_QUESTIONS_TIER2) {
+      const response = await askModel(model.openrouterModelId, q.question, apiKey);
+      const correct = q.check(response);
+      if (correct) tier2Correct++;
+
+      await new Promise((r) => setTimeout(r, 500));
+    }
+
+    tier2Score = tier2Correct;
+    console.log(`  [tier2] ${model.name}: ${tier2Correct}/${BENCHMARK_QUESTIONS_TIER2.length} challenge questions correct`);
+  }
+
+  const intelligenceScore = calculateIntelligenceScore(
+    tier1Correct,
+    tier1Total,
+    tier2Correct,
+    BENCHMARK_QUESTIONS_TIER2.length,
   );
 
   return {
@@ -136,6 +164,7 @@ async function benchmarkModel(
     codingScore: Math.round((results.coding / counts.coding) * 100),
     mathScore: Math.round((results.math / counts.math) * 100),
     knowledgeScore: Math.round((results.knowledge / counts.knowledge) * 100),
+    tier2Score,
   };
 }
 
@@ -186,11 +215,12 @@ export async function runBenchmarkJob(apiKey: string): Promise<{
         modelSlug: model.slug,
         modelName: model.name,
         providerName: model.providerName,
-        intelligenceScore: scores.intelligenceScore,
+        intelligenceScore: String(scores.intelligenceScore),
         reasoningScore: scores.reasoningScore,
         codingScore: scores.codingScore,
         mathScore: scores.mathScore,
         knowledgeScore: scores.knowledgeScore,
+        tier2Score: scores.tier2Score,
         testVersion: BENCHMARK_VERSION,
         openrouterModelId: model.openrouterModelId,
       });

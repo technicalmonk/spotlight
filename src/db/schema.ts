@@ -267,13 +267,15 @@ export const modelBenchmarks = pgTable(
     modelSlug: text("model_slug").notNull(),
     modelName: text("model_name").notNull(),
     providerName: text("provider_name").notNull(),
-    // Overall intelligence score 0-100
-    intelligenceScore: integer("intelligence_score").notNull(),
-    // Sub-scores
+    // Overall intelligence score 0-110 (100 + tier2 bonus for perfect Tier 1)
+    intelligenceScore: numeric("intelligence_score", { precision: 5, scale: 1 }).notNull(),
+    // Sub-scores (always from Tier 1, 0-100)
     reasoningScore: integer("reasoning_score"),
     codingScore: integer("coding_score"),
     mathScore: integer("math_score"),
     knowledgeScore: integer("knowledge_score"),
+    // Tier 2 challenge score (0-10, null if Tier 1 was not perfect)
+    tier2Score: integer("tier2_score"),
     // Metadata
     testVersion: text("test_version").notNull().default("v1"),
     openrouterModelId: text("openrouter_model_id"),
@@ -308,3 +310,37 @@ export type NewPriceChangeLog = typeof priceChangeLogs.$inferInsert;
 export type NewUsageScenario = typeof usageScenarios.$inferInsert;
 export type NewLeadCapture = typeof leadCaptures.$inferInsert;
 export type NewModelBenchmark = typeof modelBenchmarks.$inferInsert;
+
+// ---------------------------------------------------------------------------
+// ARENA BATTLES — head-to-head LLM battle results
+// ---------------------------------------------------------------------------
+
+export const arenaBattles = pgTable(
+  "arena_battles",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    challengeId: text("challenge_id").notNull(),
+    challengeCategory: text("challenge_category").notNull(),
+    challengeTitle: text("challenge_title").notNull(),
+    modelASlug: text("model_a_slug").notNull(),
+    modelAName: text("model_a_name").notNull(),
+    modelAProvider: text("model_a_provider").notNull(),
+    modelAResponse: text("model_a_response").notNull(),
+    modelBSlug: text("model_b_slug").notNull(),
+    modelBName: text("model_b_name").notNull(),
+    modelBProvider: text("model_b_provider").notNull(),
+    modelBResponse: text("model_b_response").notNull(),
+    winner: text("winner").notNull(),
+    voterIp: text("voter_ip"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("arena_battles_created_idx").on(table.createdAt),
+    index("arena_battles_winner_idx").on(table.winner),
+    index("arena_battles_model_a_idx").on(table.modelASlug),
+    index("arena_battles_model_b_idx").on(table.modelBSlug),
+  ],
+);
+
+export type ArenaBattle = typeof arenaBattles.$inferSelect;
+export type NewArenaBattle = typeof arenaBattles.$inferInsert;

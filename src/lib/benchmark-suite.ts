@@ -1,13 +1,20 @@
 /**
  * Benchmark test suite for evaluating LLM intelligence.
  *
- * Each test has a question with a known correct answer. The model's
- * response is checked against the expected answer. Scores are computed
- * as percentage correct across all tests.
+ * Two tiers:
+ *   Tier 1 (Core): 20 questions across reasoning, coding, math, knowledge.
+ *                  Tests core competence. Most capable models score 90-100.
+ *   Tier 2 (Challenge): 10 harder questions that most models get wrong.
+ *                       Only runs for models that scored 100 on Tier 1.
+ *                       Breaks ties at the ceiling. Final score = 100 + (tier2/10).
  *
- * Categories: reasoning, coding, math, knowledge
- * Total: 20 questions (5 per category)
- * Score: 0-100 (percentage correct * 100, rounded)
+ * Scoring:
+ *   If tier1 < 100: intelligence_score = tier1_correct / 20 * 100
+ *   If tier1 = 100: intelligence_score = 100 + (tier2_correct / 10 * 10)
+ *                   → range 100.0 to 110.0
+ *                   → e.g. 7/10 tier2 = 107.0
+ *
+ * Category sub-scores are always from Tier 1.
  */
 
 export interface BenchmarkQuestion {
@@ -18,7 +25,9 @@ export interface BenchmarkQuestion {
   check: (response: string) => boolean;
 }
 
-export const BENCHMARK_QUESTIONS: BenchmarkQuestion[] = [
+// ── Tier 1: Core Questions (20) ──────────────────────────────────────────
+
+export const BENCHMARK_QUESTIONS_TIER1: BenchmarkQuestion[] = [
   // ── Reasoning (5) ────────────────────────────────────────────────────
   {
     id: "r1",
@@ -148,5 +157,115 @@ export const BENCHMARK_QUESTIONS: BenchmarkQuestion[] = [
   },
 ];
 
-export const BENCHMARK_VERSION = "v1";
-export const TOTAL_QUESTIONS = BENCHMARK_QUESTIONS.length;
+// ── Tier 2: Challenge Questions (10) ─────────────────────────────────────
+// These are significantly harder than Tier 1. They test frontier capability.
+// Only run for models that scored 100 on Tier 1.
+// Final score for perfect Tier 1 models = 100 + (tier2_correct / 10 * 10)
+// Range: 100.0 to 110.0
+
+export const BENCHMARK_QUESTIONS_TIER2: BenchmarkQuestion[] = [
+  // ── Advanced Reasoning (3) ──────────────────────────────────────────
+  {
+    id: "t2-r1",
+    category: "reasoning",
+    question: "Five people (A, B, C, D, E) stand in a line. A is not next to B. C is between D and E. B is at one end. D is not at any end. Who is in the middle? Reply with only the letter.",
+    check: (r) => r.trim().toUpperCase().startsWith("D") || r.trim().toUpperCase() === "C",
+  },
+  {
+    id: "t2-r2",
+    category: "reasoning",
+    question: "You have 8 identical-looking balls. One is slightly heavier than the others. Using a balance scale, what is the minimum number of weighings needed to guarantee finding the heavier ball? Reply with only the number.",
+    check: (r) => r.trim() === "2" || /\b2\b/.test(r.trim()),
+  },
+  {
+    id: "t2-r3",
+    category: "reasoning",
+    question: "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How much does the ball cost in cents? Reply with only the number.",
+    check: (r) => r.trim() === "5" || /\b5\b/.test(r.trim()),
+  },
+
+  // ── Advanced Coding (3) ─────────────────────────────────────────────
+  {
+    id: "t2-c1",
+    category: "coding",
+    question: "Write a Python function 'is_balanced' that checks if a string of parentheses, brackets, and braces is balanced. Only output the code.",
+    check: (r) => r.includes("def is_balanced") && r.includes("stack") && r.includes("return"),
+  },
+  {
+    id: "t2-c2",
+    category: "coding",
+    question: "What is the time complexity of inserting an element into a binary heap? Reply with only the Big O notation.",
+    check: (r) => r.toLowerCase().includes("o(log n)") || r.toLowerCase().includes("o(log)"),
+  },
+  {
+    id: "t2-c3",
+    category: "coding",
+    question: "In Python, what does the 'nonlocal' keyword do? Reply in one sentence.",
+    check: (r) => r.toLowerCase().includes("enclosing") && (r.toLowerCase().includes("scope") || r.toLowerCase().includes("function")) && !r.toLowerCase().includes("global"),
+  },
+
+  // ── Advanced Math (2) ───────────────────────────────────────────────
+  {
+    id: "t2-m1",
+    category: "math",
+    question: "What is the derivative of f(x) = x^3 * ln(x) with respect to x? Simplify. Reply with the expression only.",
+    check: (r) => {
+      const rl = r.toLowerCase().replace(/\s/g, "");
+      // d/dx [x^3 * ln(x)] = x^2 * (3*ln(x) + 1)
+      return (rl.includes("x^2") || rl.includes("x**2") || rl.includes("x²")) &&
+             (rl.includes("3*ln") || rl.includes("3ln") || rl.includes("3ln(x)") || rl.includes("3*ln(x)")) &&
+             (rl.includes("+1") || rl.includes("+ 1"));
+    },
+  },
+  {
+    id: "t2-m2",
+    category: "math",
+    question: "How many ways can you arrange the letters in the word 'MISSISSIPPI'? Reply with only the number.",
+    check: (r) => r.trim().replace(/,/g, "") === "34650" || /\b34650\b/.test(r.trim().replace(/,/g, "")),
+  },
+
+  // ── Advanced Knowledge (2) ──────────────────────────────────────────
+  {
+    id: "t2-k1",
+    category: "knowledge",
+    question: "What is the Clausius-Clapeyron equation used to describe? Reply in one sentence.",
+    check: (r) => (r.toLowerCase().includes("phase") || r.toLowerCase().includes("vapor") || r.toLowerCase().includes("pressure") || r.toLowerCase().includes("temperature")) &&
+                   (r.toLowerCase().includes("transition") || r.toLowerCase().includes("boundary") || r.toLowerCase().includes("equilibrium") || r.toLowerCase().includes("coexist")),
+  },
+  {
+    id: "t2-k2",
+    category: "knowledge",
+    question: "Who proved the Four Color Theorem using a computer? Reply with only the last names.",
+    check: (r) => r.toLowerCase().includes("appel") && r.toLowerCase().includes("haken"),
+  },
+];
+
+// ── Backward compatibility ──────────────────────────────────────────────
+// Existing code that imports BENCHMARK_QUESTIONS gets Tier 1
+export const BENCHMARK_QUESTIONS = BENCHMARK_QUESTIONS_TIER1;
+
+export const BENCHMARK_VERSION = "v2";
+export const TOTAL_QUESTIONS = BENCHMARK_QUESTIONS_TIER1.length;
+export const TIER2_QUESTIONS = BENCHMARK_QUESTIONS_TIER2.length;
+
+/**
+ * Calculate the final intelligence score.
+ * - Tier 1 < 100: score = tier1 correct / total * 100 (integer)
+ * - Tier 1 = 100: score = 100 + (tier2 correct / tier2 total * 10) (decimal, max 110.0)
+ */
+export function calculateIntelligenceScore(
+  tier1Correct: number,
+  tier1Total: number,
+  tier2Correct: number = 0,
+  tier2Total: number = BENCHMARK_QUESTIONS_TIER2.length,
+): number {
+  const tier1Score = (tier1Correct / tier1Total) * 100;
+
+  if (tier1Score < 100) {
+    return Math.round(tier1Score);
+  }
+
+  // Perfect Tier 1 — add Tier 2 bonus
+  const tier2Bonus = (tier2Correct / tier2Total) * 10;
+  return Math.round((100 + tier2Bonus) * 10) / 10; // 1 decimal place
+}
