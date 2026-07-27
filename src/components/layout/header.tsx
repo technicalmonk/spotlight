@@ -14,6 +14,7 @@ const navLinks = [
   { href: "/compare", label: "Compare" },
   { href: "/cost-analysis", label: "Cost Analysis" },
   { href: "/scenarios", label: "Scenarios" },
+  { href: "/benchmark", label: "Benchmark" },
 ];
 
 export function Header() {
