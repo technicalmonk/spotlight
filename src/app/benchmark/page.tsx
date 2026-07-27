@@ -330,7 +330,7 @@ export default function BenchmarkPage() {
               runner that calls models via OpenRouter — is open-source. You can run it yourself,
               verify our scores, or propose new questions.
             </p>
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
               <a href="https://github.com/technicalmonk/spotlight" target="_blank" rel="noopener">
                 <span className="inline-flex items-center gap-2 rounded-lg bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-800">
                   <ExternalLink className="h-4 w-4" /> View on GitHub
@@ -343,8 +343,23 @@ export default function BenchmarkPage() {
               </Link>
             </div>
             <p className="mt-6 text-xs text-gray-400">
-              Test version: v1 · 20 questions · 4 categories · MIT License
+              Test version: v2 · 20+10 questions · 4 categories · MIT License
             </p>
+
+            {/* Arena CTA */}
+            <div className="mt-8 rounded-xl border border-brand-300 bg-gradient-to-br from-brand-50 to-white p-6 text-center">
+              <h3 className="mb-2 text-xl font-bold text-ink-900">Want to see models battle in real time?</h3>
+              <p className="mb-4 text-sm text-gray-500">
+                The Arena is our interactive LLM combat experience. Pick two models, choose a creative
+                challenge, and watch responses stream side-by-side. Vote for the winner and climb the
+                leaderboard. It's the spectator sport of AI.
+              </p>
+              <Link href="/arena">
+                <span className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
+                  Enter the Arena <ArrowRight className="h-4 w-4" />
+                </span>
+              </Link>
+            </div>
           </div>
         </section>
 
