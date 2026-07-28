@@ -12,5 +12,10 @@
       "path": "/api/cron/benchmark",
       "schedule": "0 9 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "app/api/arena/battle/route.ts": {
+      "maxDuration": 60
+    }
+  }
 }

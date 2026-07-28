@@ -161,8 +161,10 @@ export function ArenaClient({ models }: { models: ModelChoice[] }) {
               setResponseB((prev) => prev + parsed.content);
             } else if (parsed.side === "a" && parsed.error) {
               setStreamingA(false);
+              setResponseA((prev) => prev || `[Error: ${parsed.error}]`);
             } else if (parsed.side === "b" && parsed.error) {
               setStreamingB(false);
+              setResponseB((prev) => prev || `[Error: ${parsed.error}]`);
             }
           } catch {
             // skip

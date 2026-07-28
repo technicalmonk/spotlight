@@ -3,6 +3,7 @@ import { neon } from "@neondatabase/serverless";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+export const maxDuration = 60; // Allow up to 60s for both models to stream
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -124,7 +125,8 @@ export async function POST(req: NextRequest) {
           });
 
           if (!res.ok) {
-            send({ side, error: `HTTP ${res.status}` });
+            const errorText = await res.text().catch(() => "");
+            send({ side, error: `HTTP ${res.status}: ${errorText.slice(0, 100)}` });
             return "";
           }
 
@@ -162,7 +164,8 @@ export async function POST(req: NextRequest) {
 
           return fullText;
         } catch (err: any) {
-          send({ side, error: err.message || "Stream failed" });
+          const msg = err.name === "TimeoutError" ? "Model timed out (45s)" : (err.message || "Stream failed");
+          send({ side, error: msg });
           return "";
         }
       }
